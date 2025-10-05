@@ -3,7 +3,7 @@
   <aside class="sidebar">
     <div class="brand">Energix</div>
     <nav class="sidenav">
-      <Router-link :to="{name:'profile'}" class="nav" active-class="active"><span>Dashboard</span></Router-link>
+      <Router-link :to="{name:'dashboard'}" class="nav" active-class="active"><span>Dashboard</span></Router-link>
       <Router-link :to="{name:'usage'}" class="nav" active-class="active"><span>Consumo</span></Router-link>
       <Router-link :to="{name:'alerts'}" class="nav" active-class="active"><span>Alertas</span></Router-link>
       <Router-link :to="{name:'reports'}" class="nav" active-class="active"><span>Reportes</span></Router-link>
@@ -23,7 +23,7 @@
 
 </template>
 <script setup>
-import {RouterLink} from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { logout } from '../utils/mockAuth.js'
 
 const router = useRouter()

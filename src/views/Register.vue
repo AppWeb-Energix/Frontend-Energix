@@ -283,7 +283,8 @@ const handleSubmit = async () => {
       }
       await register(payload)
       setAuthenticated(true)
-      router.push({ name: 'profile' })
+      console.log('✅ Registro exitoso, redirigiendo a dashboard...')
+      await router.push({ name: 'dashboard' })
     })
   } catch (error) {
     if (error.field) {
@@ -301,4 +302,3 @@ const handleSubmit = async () => {
 <style scoped>
 @import '../styles/auth.css';
 </style>
-
