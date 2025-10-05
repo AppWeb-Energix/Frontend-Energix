@@ -8,6 +8,10 @@
       <Router-link :to="{name:'alerts'}" class="nav" active-class="active"><span>Alertas</span></Router-link>
       <Router-link :to="{name:'reports'}" class="nav" active-class="active"><span>Reportes</span></Router-link>
       <Router-link :to="{name:'configuration'}" class="nav" active-class="active"><span>Configuración</span></Router-link>
+
+      <button @click="handleLogout" class="logout-button">
+        Cerrar Sesión
+      </button>
     </nav>
   </aside>
     <div class="content">
@@ -18,5 +22,26 @@
     </div>
 
 </template>
-<script setup>import {RouterLink} from 'vue-router'
+<script setup>
+import {RouterLink} from 'vue-router'
+import { logout } from '../utils/mockAuth.js'
+
+const router = useRouter()
+
+function handleLogout() {
+  logout() // Borra localStorage
+  router.push({ name: 'login' })
+}
 </script>
+
+<style scoped>
+.logout-button {
+  margin-top: auto;
+  padding: 12px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>
