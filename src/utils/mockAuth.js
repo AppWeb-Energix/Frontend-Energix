@@ -10,7 +10,7 @@ export function setAuthenticated(value = true) {
   try {
     localStorage.setItem('isAuthenticated', String(value))
   } catch (e) {
-    console.warn('No se pudo guardar el estado de autenticación', e)
+    // Error silencioso - no es crítico para el funcionamiento
   }
 }
 
@@ -33,7 +33,7 @@ export function logout() {
   try {
     localStorage.removeItem('isAuthenticated')
   } catch (e) {
-    console.warn('No se pudo cerrar la sesión', e)
+    // Error silencioso - no es crítico para el funcionamiento
   }
 }
 

@@ -154,7 +154,6 @@ const handleSubmit = async () => {
 
       // Éxito: guardar estado y redirigir
       setAuthenticated(true)
-      console.log('✅ Login exitoso, redirigiendo a dashboard...')
       await router.push({ name: 'dashboard' })
 
       return result

@@ -332,17 +332,15 @@ const handleFileUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
     profile.invoiceFileName = file.name
-    console.log('Archivo seleccionado:', file.name)
   }
 }
 
 const saveProfile = () => {
-  console.log('Guardando perfil:', profile)
   alert('Perfil guardado correctamente')
 }
 
 const cancelProfile = () => {
-  console.log('Cancelando cambios de perfil')
+  // Lógica de cancelación sin log
 }
 
 const addDevice = () => {
@@ -351,13 +349,15 @@ const addDevice = () => {
     return
   }
 
-  if (!newDevice.type.trim()) {
-    alert('Por favor ingresa el nombre del dispositivo')
+  if (!newDevice.type || !newDevice.model) {
+    alert('Por favor completa todos los campos del dispositivo')
     return
   }
 
   const device = {
-    id: devices.length + 1,
+    id: Date.now(),
+    type: newDevice.type,
+    model: newDevice.model,
     name: newDevice.type,
     status: 'Configurando...',
     date: new Date().toLocaleString('es-PE'),
@@ -368,12 +368,10 @@ const addDevice = () => {
   newDevice.type = ''
   newDevice.model = ''
 
-  console.log('Dispositivo agregado:', device)
   alert('Dispositivo agregado correctamente')
 }
 
 const savePersonalization = () => {
-  console.log('Guardando personalización:', personalization)
   alert('Personalización guardada correctamente')
 }
 
@@ -385,7 +383,6 @@ const resetPersonalization = () => {
   personalization.chartMonthly = false
   personalization.chartDevice = true
 
-  console.log('Personalización restablecida')
   alert('Personalización restablecida')
 }
 
@@ -405,8 +402,6 @@ const updatePassword = () => {
     return
   }
 
-  console.log('Actualizando contraseña')
-
   security.currentPassword = ''
   security.newPassword = ''
   security.confirmPassword = ''
@@ -415,7 +410,6 @@ const updatePassword = () => {
 }
 
 const selectInvoiceFiles = () => {
-  console.log('Seleccionando archivos de factura')
   alert('Funcionalidad de selección de archivos de factura')
 }
 </script>

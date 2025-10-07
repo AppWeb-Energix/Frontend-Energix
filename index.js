@@ -1,1 +1,2 @@
-console.log('Happy developinconsole.log(\'Happy developing ✨\')g ✨')
+// Archivo principal del proyecto
+

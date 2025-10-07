@@ -93,27 +93,17 @@ router.beforeEach((to, from, next) => {
     const isPublic = to.meta?.public === true
     const logged = isAuthenticated()
 
-    console.log('🔍 Router Guard:', {
-        to: to.name,
-        requiresAuth,
-        isPublic,
-        logged
-    })
-
     // 1. Proteger rutas privadas
     if (requiresAuth && !logged) {
-        console.log('🔒 Ruta protegida sin autenticación, redirigiendo a login')
         return next({ name: 'login' })
     }
 
     // 2. Evitar que usuarios autenticados vean login/register
     if (isPublic && logged) {
-        console.log('✅ Usuario autenticado, redirigiendo a dashboard')
         return next({ name: 'dashboard' })
     }
 
     // 3. Permitir navegación normal
-    console.log('✅ Navegación permitida')
     next()
 })
 

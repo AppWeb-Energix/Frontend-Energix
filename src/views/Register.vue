@@ -283,7 +283,6 @@ const handleSubmit = async () => {
       }
       await register(payload)
       setAuthenticated(true)
-      console.log('✅ Registro exitoso, redirigiendo a dashboard...')
       await router.push({ name: 'dashboard' })
     })
   } catch (error) {
