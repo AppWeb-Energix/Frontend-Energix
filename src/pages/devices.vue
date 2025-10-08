@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
+
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Card from 'primevue/card'
@@ -15,6 +16,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+
 import { DevicesApi } from '@/shared/infrastructure/endpoints/devices.endpoint'
 import { AlertsApi } from '@/shared/infrastructure/endpoints/alerts.endpoint'
 import { getCurrentUser, getPlan } from '@/modules/auth/plan.util'
@@ -22,11 +24,13 @@ import { getCurrentUser, getPlan } from '@/modules/auth/plan.util'
 const toast = useToast()
 const confirm = useConfirm()
 
+// ===== estado base =====
 const user  = ref(getCurrentUser())
-const plan  = ref(getPlan())
+const plan  = ref(getPlan()) // 'basic' | 'student' | 'family'
 const devices = ref([])
 const loading = ref(false)
 
+// ===== reglas por plan =====
 const deviceTypeByPlan = computed(() => {
   if (plan.value === 'student') return 'plug'
   if (plan.value === 'family')  return 'sensor'
@@ -39,10 +43,12 @@ const limitByPlan = computed(() => {
 })
 const canAdd = computed(() => devices.value.length < limitByPlan.value)
 
-
-const search = ref('')
+// ===== ui =====
+const search   = ref('')
 const selected = ref(null)
+const newName  = ref('')
 
+// ===== modal manual (básico) =====
 const deviceCatalog = [
   { label: 'Refrigeradora', value: 'refrigerator' },
   { label: 'Lavadora',      value: 'washer' },
@@ -51,51 +57,108 @@ const deviceCatalog = [
   { label: 'Iluminación',   value: 'lights' },
   { label: 'Otro',          value: 'other' },
 ]
-
 const showManualDialog = ref(false)
-const manualForm = ref({
-  deviceKind: null,
-  metrics: { monthly:'', estimatedCost:'', tariff:'' }
-})
+const manualForm = ref({ deviceKind:null, metrics:{ monthly:'', estimatedCost:'', tariff:'' } })
 const autoManualName = computed(() => {
   const n = devices.value.filter(d => d.type === 'manual').length + 1
   return `Dispositivo ${n}`
 })
 
+// ===== zonas (solo familiar) =====
+const zones = ref([])
+const newZoneName = ref('')
+async function loadZones(){
+  if (plan.value !== 'family') return
+  zones.value = await DevicesApi.getZones(user.value.id)
+}
+async function addZone(){
+  const name = newZoneName.value.trim()
+  if (!name) return
+  const z = await DevicesApi.createZone(user.value.id, name)
+  zones.value.push(z)
+  newZoneName.value = ''
+  await AlertsApi.generateSystemAlert(user.value.id, 'zone_created', { zoneName: z.name })
+  toast.add({ severity:'success', summary:'Zona creada', life:1200 })
+}
+async function renameZone(z){
+  const name = prompt('Nuevo nombre de la zona', z.name)
+  if (!name || name.trim() === z.name) return
+  const patched = await DevicesApi.renameZone(z.id, name.trim())
+  z.name = patched.name
+  await AlertsApi.generateSystemAlert(user.value.id, 'zone_renamed', { zoneName: z.name })
+  toast.add({ severity:'success', summary:'Zona actualizada', life:1200 })
+}
+async function removeZone(z){
+  confirm.require({
+    header:'Confirmación',
+    message:`¿Eliminar zona "${z.name}"?`,
+    icon:'pi pi-exclamation-triangle',
+    acceptClass:'p-button-danger',
+    acceptLabel:'Eliminar',
+    rejectLabel:'Cancelar',
+    accept: async () => {
+      // quitar la zona a devices asignados
+      const affected = devices.value.filter(d => d.zoneId === z.id)
+      await Promise.all(affected.map(d => DevicesApi.setDeviceZone(d.id, null)))
+      affected.forEach(d => d.zoneId = null)
+
+      await DevicesApi.deleteZone(z.id)
+      zones.value = zones.value.filter(x => x.id !== z.id)
+      await AlertsApi.generateSystemAlert(user.value.id, 'zone_deleted', { zoneName: z.name })
+      toast.add({ severity:'success', summary:'Zona eliminada', life:1200 })
+    }
+  })
+}
+async function updateDeviceZone(row){
+  await DevicesApi.setDeviceZone(row.id, row.zoneId || null)
+  const z = zones.value.find(x => x.id === row.zoneId)
+  await AlertsApi.generateSystemAlert(user.value.id, 'device_zoned', {
+    deviceName: row.name,
+    zoneName: z?.name || 'Sin zona'
+  })
+  toast.add({ severity:'success', summary:'Zona asignada', life:1200 })
+}
+
+// ===== badge plan =====
 const planBadge = computed(() => {
-  const name = plan.value === 'student' ? 'Plan Estudiantil' : plan.value === 'family' ? 'Plan Familiar' : 'Plan Básico'
+  const name = plan.value === 'student' ? 'Plan Estudiantil'
+      : plan.value === 'family' ? 'Plan Familiar' : 'Plan Básico'
   const cap  = limitByPlan.value === Infinity ? '∞' : `${devices.value.length}/${limitByPlan.value}`
   return `${name} · ${cap}`
 })
 
+// ===== carga =====
 async function load(){
   if (!user.value) return
   loading.value = true
-  try { devices.value = await DevicesApi.getByUserId(user.value.id) }
-  finally { loading.value = false }
+  try {
+    devices.value = await DevicesApi.getByUserId(user.value.id)
+    await loadZones()
+  } finally { loading.value = false }
 }
 onMounted(load)
 
+// ===== tabla =====
 const tableData = computed(() =>
     devices.value
         .filter(d => d.type === deviceTypeByPlan.value)
         .filter(d => d.name?.toLowerCase().includes(search.value.toLowerCase()))
 )
 
+// ===== acciones =====
 async function addDevice(){
   if (!canAdd.value) return toast.add({ severity:'warn', summary:'Límite alcanzado', life:1500 })
 
   if (plan.value === 'student' || plan.value === 'family'){
     const index = devices.value.filter(d => d.type === deviceTypeByPlan.value).length + 1
-    const created = await DevicesApi.create(user.value.id, { name:`Dispositivo ${index}`, type:deviceTypeByPlan.value })
+    const created = await DevicesApi.create(user.value.id, { name:`Dispositivo ${index}`, type:deviceTypeByPlan.value, status:'off', online:false })
     devices.value.push(created)
-    await AlertsApi.generateSystemAlert(user.value.id, 'new_device', {
-        deviceType: deviceTypeByPlan.value
-    })
+    await AlertsApi.generateSystemAlert(user.value.id, 'new_device', { deviceType: deviceTypeByPlan.value })
     toast.add({ severity:'success', summary:'Dispositivo agregado', life:1400 })
     return
   }
 
+  // básico
   manualForm.value = { deviceKind:null, metrics:{ monthly:'', estimatedCost:'', tariff:'' } }
   showManualDialog.value = true
 }
@@ -107,21 +170,43 @@ async function createManualDevice(){
   if (!m.monthly || !m.estimatedCost)
     return toast.add({ severity:'warn', summary:'Completa consumo mensual y costo estimado', life:1500 })
 
-  const monthly = Number(m.monthly)
+  const monthly       = Number(m.monthly)
   const estimatedCost = Number(m.estimatedCost)
-  const tariff = m.tariff ? Number(m.tariff) : null
-  const dailyAvg = monthly / 30
+  const tariff        = m.tariff ? Number(m.tariff) : null
+  const dailyAvg      = monthly / 30
 
   const created = await DevicesApi.create(user.value.id, {
-    name: autoManualName.value,              // no personalizable en básico
+    name: autoManualName.value,
     type: 'manual',
-    deviceKind: manualForm.value.deviceKind, // guardamos categoría
+    deviceKind: manualForm.value.deviceKind,
+    status:'off', online:false,
     metrics: { monthly, estimatedCost, tariff, dailyAvg }
   })
-
   devices.value.push(created)
   showManualDialog.value = false
+
+  await AlertsApi.generateSystemAlert(user.value.id, 'new_device', { deviceType:'manual' })
   toast.add({ severity:'success', summary:'Dispositivo manual agregado', life:1400 })
+}
+
+async function togglePower(row){
+  if (plan.value === 'basic') return
+  const next = row.status === 'on' ? 'off' : 'on'
+  const patched = await DevicesApi.update(row.id, { status: next, online: next === 'on' })
+  row.status = patched.status
+  row.online = patched.online
+  await AlertsApi.generateSystemAlert(user.value.id, 'power_changed', { deviceName: row.name, status: row.status })
+}
+
+async function rename(){
+  if (plan.value === 'basic') return
+  if (!selected.value || !newName.value.trim()) return
+  const oldName = selected.value.name
+  const patched = await DevicesApi.update(selected.value.id, { name: newName.value.trim() })
+  selected.value.name = patched.name
+  newName.value = ''
+  await AlertsApi.generateSystemAlert(user.value.id, 'device_renamed', { oldName, newName: patched.name })
+  toast.add({ severity:'success', summary:'Nombre actualizado', life:1200 })
 }
 
 async function unlink(){
@@ -129,21 +214,19 @@ async function unlink(){
   const toRemove = { ...selected.value }
   confirm.require({
     header:'Confirmación',
-    message:`¿Desvincular "${selected.value.name}"?`,
+    message:`¿Desvincular "${toRemove.name}"?`,
     icon:'pi pi-exclamation-triangle',
+    acceptClass:'p-button-danger',
     acceptLabel:'Desvincular',
     rejectLabel:'Cancelar',
-    acceptClass:'p-button-danger',
     accept: async () => {
-      await DevicesApi.remove(selected.value.id)
-      devices.value = devices.value.filter(x => x.id !== selected.value.id)
+      await DevicesApi.remove(toRemove.id)
+      devices.value = devices.value.filter(x => x.id !== toRemove.id)
       selected.value = null
-      if (plan.value !== 'basic') {
-        await AlertsApi.generateSystemAlert(user.value.id, 'device_unlinked', {
-          deviceName: toRemove.name,
-          deviceType: toRemove.type || deviceTypeByPlan.value
-        })
-      }
+      await AlertsApi.generateSystemAlert(user.value.id, 'device_unlinked', {
+        deviceName: toRemove.name,
+        deviceType: toRemove.type || deviceTypeByPlan.value
+      })
       toast.add({ severity:'success', summary:'Dispositivo desvinculado', life:1400 })
     }
   })
@@ -151,7 +234,9 @@ async function unlink(){
 
 function severityForStatus(s){ return s === 'on' ? 'success' : 'danger' }
 const deviceTypeByPlanLabel = computed(() =>
-    deviceTypeByPlan.value === 'plug' ? 'Enchufe' : deviceTypeByPlan.value === 'sensor' ? 'Sensor' : 'Manual'
+    deviceTypeByPlan.value === 'plug' ? 'Enchufe'
+        : deviceTypeByPlan.value === 'sensor' ? 'Sensor'
+            : 'Manual'
 )
 </script>
 
@@ -196,55 +281,90 @@ const deviceTypeByPlanLabel = computed(() =>
 
         <DataTable :value="tableData" :loading="loading" dataKey="id" selectionMode="single" v-model:selection="selected">
           <Column field="name" header="Nombre" />
-          <Column field="deviceKind" header="Tipo (cat.)">
+          <Column header="Tipo">
             <template #body="{ data }">
-              {{
-                ([
-                  { label: 'Refrigeradora', value: 'refrigerator' },
-                  { label: 'Lavadora', value: 'washer' },
-                  { label: 'Televisor', value: 'tv' },
-                  { label: 'Computadora', value: 'pc' },
-                  { label: 'Iluminación', value: 'lights' },
-                  { label: 'Otro', value: 'other' }
-                ].find(x => x.value === data.deviceKind) || {}).label || '-'
-              }}
+              {{ data.type === 'plug' ? 'Enchufe' : data.type === 'sensor' ? 'Sensor' : 'Manual' }}
             </template>
           </Column>
-          <!-- Ocultar Power para plan básico -->
+
+          <!-- Zona (solo familiar) -->
+          <Column v-if="plan === 'family'" header="Zona">
+            <template #body="{ data }">
+              <Dropdown
+                  v-model="data.zoneId"
+                  :options="zones"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Sin zona"
+                  class="w-12rem"
+                  appendTo="body"
+                  @change="updateDeviceZone(data)"
+              />
+            </template>
+          </Column>
+
+          <!-- Power + Estado (no básico) -->
           <Column v-if="plan !== 'basic'" header="Power">
             <template #body="{ data }">
-              <InputSwitch :modelValue="data.status === 'on'"
-                           @update:modelValue="() => (async () => {
-                             const next = data.status === 'on' ? 'off' : 'on'
-                             const patched = await DevicesApi.update(data.id, { status: next, online: next === 'on' })
-                             data.status = patched.status
-                             data.online = patched.online
-                             await AlertsApi.generateSystemAlert(user.value.id, 'power_changed', {
-                             deviceName: data.name,
-                             status: data.status
-                             })
-                           })()" />
+              <InputSwitch :modelValue="data.status === 'on'" @update:modelValue="() => togglePower(data)" />
+            </template>
+          </Column>
+          <Column v-if="plan !== 'basic'" header="Estado">
+            <template #body="{ data }">
+              <Tag :value="data.status === 'on' ? 'Encendido' : 'Apagado'"
+                   :severity="severityForStatus(data.status)" />
             </template>
           </Column>
         </DataTable>
       </template>
     </Card>
 
-    <!-- Desvincular -->
-    <Card>
+    <!-- Personalizar / Desvincular (no básico) -->
+    <Card v-if="plan !== 'basic'">
+      <template #title>Personalizar / Desvincular</template>
+      <template #content>
+        <div class="edit-row">
+          <Dropdown v-model="selected" :options="tableData" optionLabel="name" placeholder="Selecciona"
+                    class="w-20rem drop-right" appendTo="self" />
+          <InputText v-model="newName" placeholder="Nuevo nombre" class="w-20rem" />
+          <Button label="Guardar" :disabled="!selected || !newName" @click="rename" class="btn-oxford" />
+          <Button label="Desvincular" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
+        </div>
+      </template>
+    </Card>
+
+    <!-- Solo Desvincular (básico) -->
+    <Card v-else>
       <template #title>Desvincular</template>
       <template #content>
         <div class="edit-row">
-          <Dropdown
-              v-model="selected"
-              :options="tableData"
-              optionLabel="name"
-              placeholder="Selecciona"
-              class="w-20rem drop-right dropdown-oxford"
-              appendTo="self"
-          />
+          <Dropdown v-model="selected" :options="tableData" optionLabel="name" placeholder="Selecciona"
+                    class="w-20rem drop-right" appendTo="self" />
           <Button label="Desvincular" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
         </div>
+      </template>
+    </Card>
+
+    <!-- Zonas (solo familiar) -->
+    <Card v-if="plan === 'family'" class="mt-3">
+      <template #title>Zonas</template>
+      <template #content>
+        <div class="edit-row">
+          <InputText v-model="newZoneName" placeholder="Nueva zona (ej. Sala, Cocina)" class="w-20rem" />
+          <Button label="Agregar" class="btn-oxford" :disabled="!newZoneName" @click="addZone" />
+        </div>
+
+        <DataTable :value="zones" dataKey="id" class="mt-2">
+          <Column field="name" header="Nombre" />
+          <Column header="Acciones" :style="{width:'200px'}">
+            <template #body="{ data }">
+              <div class="row-actions">
+                <Button label="Renombrar" size="small" text @click="renameZone(data)" />
+                <Button label="Eliminar" size="small" severity="danger" text @click="removeZone(data)" />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
       </template>
     </Card>
 
@@ -255,25 +375,17 @@ const deviceTypeByPlanLabel = computed(() =>
         <div class="auto-name">{{ autoManualName }}</div>
 
         <label>Tipo de dispositivo</label>
-        <Dropdown
-            v-model="manualForm.deviceKind"
-            :options="deviceCatalog"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Selecciona"
-            class="dropdown-oxford"
-            appendTo="body"
-            :scrollHeight="'240px'"
-        />
+        <Dropdown v-model="manualForm.deviceKind" :options="deviceCatalog" optionLabel="label" optionValue="value"
+                  placeholder="Selecciona" appendTo="body" :scrollHeight="'340px'" />
 
         <label>Consumo mensual (kWh)</label>
-        <InputText v-model="manualForm.metrics.monthly" type="number" inputmode="decimal" class="input-oxford" />
+        <InputText v-model="manualForm.metrics.monthly" type="number" inputmode="decimal" />
 
         <label>Costo estimado mensual (S/)</label>
-        <InputText v-model="manualForm.metrics.estimatedCost" type="number" inputmode="decimal" class="input-oxford" />
+        <InputText v-model="manualForm.metrics.estimatedCost" type="number" inputmode="decimal" />
 
         <label>Tarifa por kWh (S/)</label>
-        <InputText v-model="manualForm.metrics.tariff" type="number" inputmode="decimal" class="input-oxford" />
+        <InputText v-model="manualForm.metrics.tariff" type="number" inputmode="decimal" />
       </div>
 
       <small class="hint">
@@ -390,4 +502,3 @@ const deviceTypeByPlanLabel = computed(() =>
 }
 
 </style>
-
