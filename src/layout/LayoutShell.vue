@@ -26,7 +26,6 @@
 <script setup>
 import { RouterLink, useRouter } from 'vue-router'
 import { logout } from '../utils/mockAuth.js'
-
 const router = useRouter()
 
 function handleLogout() {
