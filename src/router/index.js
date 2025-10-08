@@ -1,36 +1,78 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '../utils/mockAuth.js'
+import { isAuthenticated } from '@/modules/auth/auth.service'
 
-// Eager load para rutas críticas de autenticación (mejor performance en First Contentful Paint)
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
+const getUserPlan = () => {
+    try {
+        // 'energix-plan' se guarda en auth.service.js durante el registro/login
+        return localStorage.getItem('energix-plan') || 'basic';
+    } catch (e) {
+        // En caso de error de acceso al storage
+        return 'basic';
+    }
+}
 
-// Lazy load para rutas privadas (code splitting)
-const Dashboard = () => import('../pages/dashboard.vue')
-const Usage = () => import('../pages/usage.vue')
+/**
+ * Mapea el plan guardado al nombre de la ruta.
+ * @param {string} plan - El plan del usuario ('student', 'family', 'basic').
+ * @returns {string} Nombre de la ruta del dashboard.
+ */
+const getDashboardRouteName = (plan) => {
+    switch (plan.toLowerCase()) {
+        case 'student':
+            return 'dashboard-student';
+        case 'family':
+            return 'dashboard-family';
+        case 'basic':
+        default:
+            return 'dashboard-basic';
+    }
+}
+
+// --- Lazy load para rutas privadas ---
+const DashboardFamily = () => import('../pages/dashboard.vue')
+const DashboardStudent = () => import('../pages/dashboard-student.vue')
+const DashboardBasic = () => import('../pages/dashboard-basic.vue')
+
 const Alerts = () => import('../pages/alerts.vue')
-const Reports = () => import('../pages/reports.vue')
+const ConfigurationBasic = () => import('../pages/configuration-basic.vue')
 const Configuration = () => import('../pages/configuration.vue')
 const NotFound = () => import('../pages/notfound.vue')
+const Subscriptions = () => import('../pages/subscriptions.vue')
+
+// Eager load para rutas críticas de autenticación
+import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL || '/'),
     routes: [
-        // Redirigir raíz según estado de autenticación
+        {
+            path: '/subscriptions',
+            name: 'subscriptions',
+            component: Subscriptions,
+            meta: { title: 'Suscripciones' } },
         {
             path: '/',
             redirect: () => {
+                // Redirige al login o al dashboard dinámico principal
                 return isAuthenticated() ? '/dashboard' : '/login'
             }
         },
 
-        // Rutas públicas (autenticación)
         {
             path: '/login',
             name: 'login',
             component: Login,
             meta: { title: 'Sign In', public: true }
         },
+
+        {
+            path: '/recompensas',
+            name: 'rewards',
+            component: () => import('../pages/rewards.vue'),
+            meta: { title: 'Recompensas' }
+        },
+
         {
             path: '/register',
             name: 'register',
@@ -38,22 +80,41 @@ export const router = createRouter({
             meta: { title: 'Sign Up', public: true }
         },
 
-        // Rutas privadas (requieren autenticación)
+        // RUTA DINÁMICA DE DASHBOARD (El nombre 'dashboard' actúa como proxy)
         {
             path: '/dashboard',
             name: 'dashboard',
-            component: Dashboard,
+            redirect: () => {
+                const plan = getUserPlan();
+                const routeName = getDashboardRouteName(plan);
+                return { name: routeName };
+            },
             meta: { title: 'Dashboard', requiresAuth: true }
         },
+
+        // Rutas específicas de los dashboards
         {
-            path: '/profile',
-            redirect: '/dashboard' // Alias para compatibilidad
+            path: '/dashboard/family',
+            name: 'dashboard-family',
+            component: DashboardFamily,
+            meta: { title: 'Dashboard Familiar', requiresAuth: true }
         },
         {
-            path: '/usage',
-            name: 'usage',
-            component: Usage,
-            meta: { title: 'Usage', requiresAuth: true }
+            path: '/dashboard/student',
+            name: 'dashboard-student',
+            component: DashboardStudent,
+            meta: { title: 'Dashboard Estudiante', requiresAuth: true }
+        },
+        {
+            path: '/dashboard/basic',
+            name: 'dashboard-basic',
+            component: DashboardBasic,
+            meta: { title: 'Dashboard Básico', requiresAuth: true }
+        },
+
+        {
+            path: '/profile',
+            redirect: '/dashboard'
         },
         {
             path: '/alerts',
@@ -62,19 +123,37 @@ export const router = createRouter({
             meta: { title: 'Alerts', requiresAuth: true }
         },
         {
-            path: '/reports',
-            name: 'reports',
-            component: Reports,
-            meta: { title: 'Reports', requiresAuth: true }
+            path: '/devices',
+            name: 'devices',
+            component: () => import('@/pages/devices.vue'),
+            meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
+        // Redirección dinámica para configuración según el plan
         {
             path: '/configuration',
-            name: 'configuration',
-            component: Configuration,
+            redirect: () => {
+                const plan = (localStorage.getItem('energix-plan') || 'basic').toLowerCase();
+                if (plan === 'basic') {
+                    return { name: 'configuration-basic' };
+                } else {
+                    return { name: 'configuration-advanced' };
+                }
+            },
             meta: { title: 'Configuration', requiresAuth: true }
         },
+        {
+            path: '/configuration/basic',
+            name: 'configuration-basic',
+            component: ConfigurationBasic,
+            meta: { title: 'Configuración Básica', requiresAuth: true }
+        },
+        {
+            path: '/configuration/advanced',
+            name: 'configuration-advanced',
+            component: Configuration,
+            meta: { title: 'Configuración Avanzada', requiresAuth: true }
+        },
 
-        // 404 - No encontrado
         {
             path: '/:pathMatch(.*)*',
             name: '404',
@@ -87,27 +166,24 @@ export const router = createRouter({
     }
 })
 
-// Navigation Guard - Protección de rutas
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.meta?.requiresAuth === true
     const isPublic = to.meta?.public === true
     const logged = isAuthenticated()
 
-    // 1. Proteger rutas privadas
     if (requiresAuth && !logged) {
         return next({ name: 'login' })
     }
 
-    // 2. Evitar que usuarios autenticados vean login/register
     if (isPublic && logged) {
+        // CORRECCIÓN: Usamos el nombre de ruta genérico 'dashboard'
+        // que ya tiene el redirect configurado para ir al plan correcto.
         return next({ name: 'dashboard' })
     }
 
-    // 3. Permitir navegación normal
     next()
 })
 
-// Actualizar título de la pestaña
 router.afterEach((to) => {
     document.title = `Energix · ${to.meta?.title || 'App'}`
 })

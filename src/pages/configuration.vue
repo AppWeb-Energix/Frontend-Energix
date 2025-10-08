@@ -35,98 +35,11 @@
             <label class="form-label">Distrito</label>
             <input v-model="profile.district" type="text" placeholder="Miraflores" class="form-input" />
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Adjuntar recibo de luz (PDF/JPG)</label>
-            <div class="file-input-container">
-              <input type="file" ref="fileInput" @change="handleFileUpload" accept=".pdf,.jpg,.jpeg" class="hidden-file-input" />
-              <input type="text" :value="profile.invoiceFileName" readonly class="form-input file-display" />
-              <button @click="$refs.fileInput.click()" class="file-button">Examinar</button>
-            </div>
-          </div>
         </div>
 
         <div class="button-group">
           <button @click="saveProfile" class="btn-primary">Guardar cambios</button>
           <button @click="cancelProfile" class="btn-secondary">Cancelar</button>
-        </div>
-      </div>
-
-      <!-- Sección Plan -->
-      <div class="section-card">
-        <div class="section-header">
-          <h3 class="section-title">Plan</h3>
-          <span class="change-plan-badge">Cambiar Plan</span>
-        </div>
-
-        <div class="plan-grid">
-          <div class="plan-selector">
-            <label class="form-label">Tipo de plan</label>
-            <select v-model="plan.type" class="form-select">
-              <option value="estudiantil">Estudiantil</option>
-              <option value="familiar">Familiar</option>
-              <option value="empresarial">Empresarial</option>
-            </select>
-            <p class="form-help">Historial 90 días | Dispositivos: 2</p>
-          </div>
-
-          <div class="plan-info">
-            <h4 class="plan-title">Plan Estudiantil</h4>
-            <ul class="plan-features">
-              <li>• Todo del plan básico</li>
-              <li>• Historial ampliado (últimos 3 meses)</li>
-              <li>• Recomendaciones personalizadas</li>
-              <li>• Monitoreo en tiempo real (hasta 5 usos simultáneos)</li>
-              <li>• Integración con hasta 2 dispositivos inteligentes</li>
-              <li>• Soporte básico por chat o correo</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección Preferencias -->
-      <div class="section-card">
-        <h3 class="section-title">Preferencias</h3>
-        <div class="preferences-grid">
-          <div class="preferences-left">
-            <div class="form-group">
-              <label class="form-label">Techo base (S/ kWh)</label>
-              <select v-model="preferences.baseRate" class="form-select">
-                <option value="S">S</option>
-                <option value="1.0">1.0</option>
-                <option value="1.5">1.5</option>
-              </select>
-              <p class="form-help">Se calcula su meta mensuales en base a su consumo histórico</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Meta diario (kWh) / Límite</label>
-              <select v-model="preferences.dailyLimit" class="form-select">
-                <option value="8">8</option>
-                <option value="10">10</option>
-                <option value="12">12</option>
-              </select>
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="enableSummary" v-model="preferences.enableDailySummary" class="form-checkbox" />
-                <label for="enableSummary" class="checkbox-label">Enviar resumen diario (ahorro)</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="preferences-right">
-            <div class="checkbox-group">
-              <input type="checkbox" id="dailySummary" v-model="preferences.dailySummary" class="form-checkbox" />
-              <label for="dailySummary" class="checkbox-label">Resumen diario por correo</label>
-            </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="limit80" v-model="preferences.limit80" class="form-checkbox" />
-              <label for="limit80" class="checkbox-label">Aviso al 80% del límite mensual</label>
-            </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="unusualAlert" v-model="preferences.unusualAlert" class="form-checkbox" />
-              <label for="unusualAlert" class="checkbox-label">Alerta de consumo inusual</label>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -195,10 +108,23 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { usePersonalizationStore } from '../stores/personalization'
+import { changePasswordService } from '@/modules/auth/auth.service'
 
 const personalization = usePersonalizationStore()
+
+function getUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem('energix-user'))
+    return user?.id || 1
+  } catch {
+    return 1
+  }
+}
+
+// Cambia esto por la obtención real del userId si tienes auth
+const userId = 1
 
 // Estados locales para otras secciones (estos no están en Pinia)
 const profile = reactive({
@@ -208,10 +134,6 @@ const profile = reactive({
   dni: '',
   district: '',
   invoiceFileName: ''
-})
-
-const plan = reactive({
-  type: 'estudiantil'
 })
 
 const preferences = reactive({
@@ -231,9 +153,54 @@ const security = reactive({
 
 const fileInput = ref(null)
 
+// Cargar datos del usuario autenticado
+onMounted(() => {
+  const user = JSON.parse(localStorage.getItem('energix-user'))
+  if (user) {
+    profile.name = user.name || ''
+    profile.lastName = user.lastName || ''
+    profile.email = user.email || ''
+    profile.dni = user.dni || ''
+    profile.district = user.district || ''
+    // No se carga password ni plan aquí
+  }
+  personalization.loadPersonalization() // Cargar personalización del usuario actual
+})
+
 // Funciones para perfil
-const saveProfile = () => {
-  alert('Perfil guardado correctamente')
+const saveProfile = async () => {
+  try {
+    const userId = getUserId()
+    // PATCH solo los campos editables
+    const response = await fetch(`http://localhost:3001/api/v1/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: profile.name,
+        lastName: profile.lastName,
+        email: profile.email,
+        dni: profile.dni,
+        district: profile.district
+      })
+    })
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.message || 'Error al guardar el perfil')
+    }
+    // Actualizar localStorage
+    const user = JSON.parse(localStorage.getItem('energix-user'))
+    Object.assign(user, {
+      name: profile.name,
+      lastName: profile.lastName,
+      email: profile.email,
+      dni: profile.dni,
+      district: profile.district
+    })
+    localStorage.setItem('energix-user', JSON.stringify(user))
+    alert('Perfil guardado correctamente')
+  } catch (err) {
+    alert(err.message || 'Error al guardar el perfil')
+  }
 }
 
 const cancelProfile = () => {
@@ -249,29 +216,39 @@ const handleFileUpload = (event) => {
 
 // Funciones para personalización
 const savePersonalization = () => {
+  // Forzar el guardado de los valores actuales de los checkboxes
+  personalization.savePersonalization({
+    kpiCurrent: personalization.kpiCurrent,
+    kpiCost: personalization.kpiCost,
+    kpiMonthly: personalization.kpiMonthly,
+    chartHourly: personalization.chartHourly,
+    chartMonthly: personalization.chartMonthly,
+    chartDevice: personalization.chartDevice
+  })
   alert('Personalización guardada y reflejada en el Dashboard')
 }
 
 const resetPersonalization = () => {
-  personalization.kpiCurrent = true
-  personalization.kpiCost = true
-  personalization.kpiMonthly = true
-  personalization.chartHourly = true
-  personalization.chartMonthly = false
-  personalization.chartDevice = true
+  personalization.resetPersonalization()
   alert('Personalización restablecida')
 }
 
 // Función para seguridad
-const updatePassword = () => {
+const updatePassword = async () => {
   if (security.newPassword !== security.confirmPassword) {
     alert('Las contraseñas no coinciden')
     return
   }
-  alert('Contraseña actualizada correctamente')
-  security.currentPassword = ''
-  security.newPassword = ''
-  security.confirmPassword = ''
+  try {
+    const userId = getUserId()
+    await changePasswordService(userId, security.currentPassword, security.newPassword)
+    alert('Contraseña actualizada correctamente')
+    security.currentPassword = ''
+    security.newPassword = ''
+    security.confirmPassword = ''
+  } catch (err) {
+    alert(err.message || 'Error al actualizar la contraseña')
+  }
 }
 </script>
 
@@ -398,12 +375,6 @@ const updatePassword = () => {
   gap: 24px;
 }
 
-.plan-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-}
-
 .preferences-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -421,33 +392,6 @@ const updatePassword = () => {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
   margin-bottom: 32px;
-}
-
-/* PLAN INFO */
-.plan-info {
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.plan-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e40af;
-  margin-bottom: 12px;
-}
-
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.plan-features li {
-  font-size: 12px;
-  color: #1d4ed8;
-  margin-bottom: 4px;
 }
 
 /* CHECKBOXES */

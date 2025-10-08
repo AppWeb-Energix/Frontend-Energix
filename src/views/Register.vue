@@ -117,7 +117,7 @@ import AuthCard from '../components/auth/AuthCard.vue'
 import AuthField from '../components/auth/AuthField.vue'
 import PasswordField from '../components/auth/PasswordField.vue'
 import CodeInput from '../components/auth/CodeInput.vue'
-import { validateCode, register, setAuthenticated } from '../utils/mockAuth.js'
+import { validateCodeService, registerService } from '@/modules/auth/auth.service'
 import { isValidEmail, isRequired, isValidPassword, passwordsMatch, isValidDNI } from '../utils/validators.js'
 import { useAsyncAction } from '../composables/useAsyncAction.js'
 import { useFocusManagement } from '../composables/useFocusManagement.js'
@@ -193,7 +193,9 @@ const { loading: codeLoading, execute: executeCodeValidation } = useAsyncAction(
 const { loading: submitLoading, execute: executeSubmit } = useAsyncAction()
 const { focusFirstError } = useFocusManagement()
 
-const canSubmit = computed(() => codeValid.value && !submitLoading.value)
+const canSubmit = computed(() =>
+    !submitLoading.value && (formData.value.code ? codeValid.value : true)
+)
 
 const handleCodeChange = () => {
   codeValid.value = false
@@ -208,7 +210,7 @@ const handleValidateCode = async () => {
   }
   try {
     await executeCodeValidation(async () => {
-      await validateCode(formData.value.code)
+      await validateCodeService(formData.value.code)
       codeValid.value = true
     })
   } catch (error) {
@@ -261,19 +263,24 @@ const validateAllFields = () => {
 
 const handleSubmit = async () => {
   generalError.value = ''
-  if (!codeValid.value) {
+
+  // Solo exigimos validación si el usuario ingresó un código
+  if (formData.value.code && !codeValid.value) {
     generalError.value = MESSAGES.errors.codeValidate
     return
   }
+
+  // Validaciones de campos
   const isValid = validateAllFields()
   if (!isValid) {
     await focusFirstError(errors.value)
     return
   }
+
   try {
     await executeSubmit(async () => {
       const payload = {
-        code: formData.value.code,
+        code: formData.value.code || '',   // vacío => plan basic en el backend
         name: formData.value.name,
         lastName: formData.value.lastName,
         email: formData.value.email,
@@ -281,8 +288,8 @@ const handleSubmit = async () => {
         dni: formData.value.dni,
         district: formData.value.district
       }
-      await register(payload)
-      setAuthenticated(true)
+
+      const user = await registerService(payload)
       await router.push({ name: 'dashboard' })
     })
   } catch (error) {
@@ -296,6 +303,7 @@ const handleSubmit = async () => {
     }
   }
 }
+
 </script>
 
 <style scoped>

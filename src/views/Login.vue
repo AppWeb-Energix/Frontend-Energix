@@ -2,7 +2,6 @@
   <div class="auth-page">
     <AuthCard :title="MESSAGES.title">
       <form class="auth-form" @submit.prevent="handleSubmit">
-        <!-- Error general de credenciales -->
         <div
           v-if="generalError"
           class="auth-error-message"
@@ -12,7 +11,6 @@
           {{ generalError }}
         </div>
 
-        <!-- Campo de Email -->
         <AuthField
           v-model="email"
           :label="MESSAGES.emailLabel"
@@ -23,7 +21,6 @@
           @blur="validateEmail"
         />
 
-        <!-- Campo de Contraseña -->
         <PasswordField
           v-model="password"
           :label="MESSAGES.passwordLabel"
@@ -33,7 +30,6 @@
           @blur="validatePassword"
         />
 
-        <!-- Botón de envío -->
         <button
           type="submit"
           :class="['auth-button', { 'auth-button--loading': loading }]"
@@ -45,7 +41,6 @@
         </button>
       </form>
 
-      <!-- Footer con enlace a registro -->
       <div class="auth-footer">
         {{ MESSAGES.noAccount }}
         <router-link to="/register" class="auth-footer__link">
@@ -57,27 +52,20 @@
 </template>
 
 <script setup>
-/*
-  CÓMO PROBAR EL MOCK:
-  - Credenciales válidas: email="test@ejemplo.com" y password="password"
-  - Cualquier otra combinación mostrará error de credenciales
-  - La contraseña debe tener mínimo 8 caracteres
-  - El email debe tener formato válido
-  - 5% de probabilidad de error de red simulado
-*/
 
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthCard from '../components/auth/AuthCard.vue'
 import AuthField from '../components/auth/AuthField.vue'
 import PasswordField from '../components/auth/PasswordField.vue'
-import { login, setAuthenticated } from '../utils/mockAuth.js'
+import { loginService } from '@/modules/auth/auth.service'
 import { isValidEmail, isValidPassword } from '../utils/validators.js'
 import { useAsyncAction } from '../composables/useAsyncAction.js'
+import { usePersonalizationStore } from '../stores/personalization.js'
 
 const router = useRouter()
+const personalizationStore = usePersonalizationStore()
 
-// Mensajes de UI (preparado para i18n futuro)
 const MESSAGES = {
   title: 'Bienvenido a Energix',
   emailLabel: 'Correo Electrónico',
@@ -95,17 +83,14 @@ const MESSAGES = {
   }
 }
 
-// Estado del formulario
 const email = ref('')
 const password = ref('')
 const emailError = ref('')
 const passwordError = ref('')
 const generalError = ref('')
 
-// Composable para manejar loading
 const { loading, execute } = useAsyncAction()
 
-// Validación de email
 const validateEmail = () => {
   emailError.value = ''
   if (!email.value) {
@@ -119,7 +104,6 @@ const validateEmail = () => {
   return true
 }
 
-// Validación de contraseña
 const validatePassword = () => {
   passwordError.value = ''
   if (!password.value) {
@@ -133,11 +117,9 @@ const validatePassword = () => {
   return true
 }
 
-// Manejo del envío del formulario
 const handleSubmit = async () => {
   generalError.value = ''
 
-  // Validar campos
   const isEmailValid = validateEmail()
   const isPasswordValid = validatePassword()
 
@@ -147,19 +129,15 @@ const handleSubmit = async () => {
 
   try {
     await execute(async () => {
-      const result = await login({
-        email: email.value,
-        password: password.value
+      const user = await loginService({ email: email.value, password: password.value })
+      personalizationStore.loadPersonalization() // Carga la personalización del usuario que acaba de iniciar sesión
+      personalizationStore.savePersonalization() // Guarda la personalización del usuario al iniciar sesión
+      await router.replace({
+        name: 'dashboard'
       })
-
-      // Éxito: guardar estado y redirigir
-      setAuthenticated(true)
-      await router.push({ name: 'dashboard' })
-
-      return result
+      return user
     })
   } catch (error) {
-    // Manejar errores de red vs errores de credenciales
     if (error.network) {
       generalError.value = error.message
     } else {
