@@ -744,6 +744,66 @@
       "timestamp": "2025-10-08T16:17:11.909Z",
       "isRead": false,
       "id": 51
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T17:28:33.590Z",
+      "isRead": true,
+      "id": 52
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T17:28:54.101Z",
+      "isRead": true,
+      "id": 53
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T17:29:30.464Z",
+      "isRead": false,
+      "id": 54
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T17:34:08.549Z",
+      "isRead": true,
+      "id": 55
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T17:35:14.974Z",
+      "isRead": true,
+      "id": 56
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Nuevo dispositivo conectado",
+      "details": "Se vinculó un manual",
+      "timestamp": "2025-10-08T17:47:07.761Z",
+      "isRead": true,
+      "id": 57
     }
   ]
 }

@@ -8,6 +8,8 @@
       <Router-link :to="{name:'alerts'}" class="nav" active-class="active"><span>Alertas</span></Router-link>
       <Router-link :to="{name:'reports'}" class="nav" active-class="active"><span>Reportes</span></Router-link>
       <Router-link :to="{name:'devices'}" class="nav" active-class="active"><span>Mis Dispositivos</span></Router-link>
+      <Router-link :to="{name:'subscriptions'}" class="nav" active-class="active"><span>Suscripciones</span></Router-link>
+      <Router-link :to="{name:'rewards'}" class="nav" active-class="active"><span>Recompensas</span></Router-link>
       <Router-link :to="{name:'configuration'}" class="nav" active-class="active"><span>Configuración</span></Router-link>
 
       <button @click="handleLogout" class="logout-button">

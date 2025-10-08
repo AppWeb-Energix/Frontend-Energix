@@ -56,7 +56,7 @@
       <div class="section-card">
         <div class="section-header">
           <h3 class="section-title">Plan</h3>
-          <span class="change-plan-badge">Cambiar Plan</span>
+          <Router-link :to="{ name: 'subscriptions' }" class="change-plan-badge">Cambiar Plan</Router-link>
         </div>
 
         <div class="plan-grid">

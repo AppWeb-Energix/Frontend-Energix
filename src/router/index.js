@@ -38,6 +38,12 @@ const Alerts = () => import('../pages/alerts.vue')
 const Reports = () => import('../pages/reports.vue')
 const Configuration = () => import('../pages/configuration.vue')
 const NotFound = () => import('../pages/notfound.vue')
+const Subscriptions = () => import('../pages/subscriptions.vue')
+
+
+// Eager load para rutas críticas de autenticación
+import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
 
 // Eager load para rutas críticas de autenticación
 import Login from '../views/Login.vue'
@@ -46,6 +52,11 @@ import Register from '../views/Register.vue'
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL || '/'),
     routes: [
+        {
+            path: '/subscriptions',
+            name: 'subscriptions',
+            component: Subscriptions,
+            meta: { title: 'Suscripciones' } },
         {
             path: '/',
             redirect: () => {
@@ -60,6 +71,14 @@ export const router = createRouter({
             component: Login,
             meta: { title: 'Sign In', public: true }
         },
+
+        {
+            path: '/recompensas',
+            name: 'rewards',
+            component: () => import('../pages/rewards.vue'),
+            meta: { title: 'Recompensas' }
+        },
+
         {
             path: '/register',
             name: 'register',
