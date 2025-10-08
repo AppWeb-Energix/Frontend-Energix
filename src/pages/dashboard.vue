@@ -2,7 +2,7 @@
   <div class="content">
     <header class="topbar">
       <div class="greeting">
-        <h1>Bienvenido de vuelta, <strong>Jorge</strong>.</h1>
+        <h1>Bienvenido de vuelta, <strong>{{ userName }}</strong>.</h1>
       </div>
       <div class="top-meta">
         <div class="datetime">
@@ -13,8 +13,8 @@
         <div class="user">
           <img class="avatar" src="" alt="Foto de Jorge Ramírez" />
           <div class="user-meta">
-            <div class="name">Jorge Ramírez</div>
-            <div class="plan">Plan Estudiantil</div>
+            <div class="name">{{ userName }}</div>
+            <div class="plan">{{ userPlan }}</div>
           </div>
         </div>
       </div>
@@ -85,12 +85,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { http } from '@/shared/infrastructure/base-api'
 import { usePersonalizationStore } from '@/stores/personalization'
+import { useAuth } from '@/composables/useAuth'
 
 const personalization = usePersonalizationStore()
+const { userId, userName, userPlan, getCurrentUser } = useAuth()
 
 onMounted(() => {
   personalization.loadPersonalization()
@@ -99,10 +101,16 @@ onMounted(() => {
 Chart.register(...registerables)
 
 // Estado
-const userId = 2
 const zones = ref([])
 const devicesHora = ref([])
 const devicesShareCache = ref([])
+
+// Datos de los gráficos (reactivos)
+const chartData = ref({
+  hourly: [],
+  monthly: [],
+  deviceShare: { labels: [], data: [] }
+})
 
 const selectedZoneIdHora = ref(null)
 const selectedZoneIdMes = ref(null)
@@ -110,12 +118,38 @@ const selectedZoneIdDispositivo = ref(null)
 const selectedDeviceId = ref(null)
 let charts = { hora: null, mes: null, dispositivo: null }
 
+// Estado separado para evitar reactividad
+const isChartsReady = ref(false)
+
 // API helpers (tu json-server mapea /api/v1/* a /$1)
 async function loadZones() {
-  zones.value = await http.get(`/api/v1/zones?userId=${userId}`)
+  if (!userId.value) {
+    console.warn('UserId not available yet')
+    return []
+  }
+  try {
+    const zones = await http.get(`/api/v1/zones?userId=${userId.value}`)
+    console.log('Zones loaded:', zones)
+    return zones
+  } catch (error) {
+    console.error('Error loading zones:', error)
+    return []
+  }
 }
+
 async function loadDevicesFor(zoneId) {
-  return await http.get(`/api/v1/devices?zoneId=${zoneId}`)
+  if (!zoneId) {
+    console.warn('ZoneId not provided')
+    return []
+  }
+  try {
+    const devices = await http.get(`/api/v1/devices?zoneId=${zoneId}`)
+    console.log('Devices loaded for zone', zoneId, ':', devices)
+    return devices
+  } catch (error) {
+    console.error('Error loading devices for zone', zoneId, ':', error)
+    return []
+  }
 }
 
 // Generadores determinísticos (placeholder de consumo)
@@ -157,15 +191,34 @@ const horaLabels6 = ['12 AM','4 AM','8 AM','12 PM','4 PM','8 PM']
 function sampleTo6(arr24) { return [arr24[0], arr24[4], arr24[8], arr24[12], arr24[16], arr24[20]] }
 
 async function renderHora() {
-  if (!selectedZoneIdHora.value) return
+  console.log('renderHora called, selectedZoneIdHora:', selectedZoneIdHora.value)
+  if (!selectedZoneIdHora.value) {
+    console.warn('No zone selected for hora chart')
+    return
+  }
+
   devicesHora.value = await loadDevicesFor(selectedZoneIdHora.value)
+  console.log('Devices for hora chart:', devicesHora.value)
+
   if (!selectedDeviceId.value) selectedDeviceId.value = devicesHora.value[0]?.id ?? null
-  if (!selectedDeviceId.value) return
+  if (!selectedDeviceId.value) {
+    console.warn('No device selected for hora chart')
+    return
+  }
 
   const buckets24 = genHourlyFromDeviceId(selectedDeviceId.value)
   const data6 = sampleTo6(buckets24)
+  console.log('Generated hourly data:', data6)
+
+  // Guardar datos en reactive ref
+  chartData.value.hourly = data6
+
   const ctx = document.getElementById('consumoPorHora')?.getContext('2d')
-  if (!ctx) return
+  if (!ctx) {
+    console.error('Canvas context not found for consumoPorHora')
+    return
+  }
+
   charts.hora?.destroy()
   charts.hora = new Chart(ctx, {
     type: 'line',
@@ -180,38 +233,93 @@ async function renderHora() {
         tension: 0.3
       }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } }
+    }
   })
+  console.log('Hora chart rendered successfully')
 }
 
 async function renderMes() {
-  if (!selectedZoneIdMes.value) return
+  console.log('renderMes called, selectedZoneIdMes:', selectedZoneIdMes.value)
+  if (!selectedZoneIdMes.value) {
+    console.warn('No zone selected for mes chart')
+    return
+  }
+
   const buckets7 = genWeekFromZoneId(selectedZoneIdMes.value)
+  console.log('Generated monthly data:', buckets7)
+
+  // Guardar datos en reactive ref
+  chartData.value.monthly = buckets7
+
   const ctx = document.getElementById('consumoPorMes')?.getContext('2d')
-  if (!ctx) return
+  if (!ctx) {
+    console.error('Canvas context not found for consumoPorMes')
+    return
+  }
+
   charts.mes?.destroy()
   charts.mes = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: ['1','2','3','4','5','6','7'],
-      datasets: [{ label: 'Consumo por día (kWh)', data: buckets7, backgroundColor: '#0b2541' }]
+      datasets: [{
+        label: 'Consumo por día (kWh)',
+        data: buckets7,
+        backgroundColor: '#0b2541'
+      }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } }
+    }
   })
+  console.log('Mes chart rendered successfully')
 }
 
 async function renderDispositivo() {
-  if (!selectedZoneIdDispositivo.value) return
+  console.log('renderDispositivo called, selectedZoneIdDispositivo:', selectedZoneIdDispositivo.value)
+  if (!selectedZoneIdDispositivo.value) {
+    console.warn('No zone selected for dispositivo chart')
+    return
+  }
+
   devicesShareCache.value = await loadDevicesFor(selectedZoneIdDispositivo.value)
+  console.log('Devices for dispositivo chart:', devicesShareCache.value)
+
   const { labels, data } = genShareFromDevices(devicesShareCache.value)
+  console.log('Generated device share data:', { labels, data })
+
+  // Guardar datos en reactive ref
+  chartData.value.deviceShare = { labels, data }
+
   const ctx = document.getElementById('consumoPorDispositivo')?.getContext('2d')
-  if (!ctx) return
+  if (!ctx) {
+    console.error('Canvas context not found for consumoPorDispositivo')
+    return
+  }
+
   charts.dispositivo?.destroy()
   charts.dispositivo = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: ['#0b2541','#f46161ff','#ffd700','#4caf50'] }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: ['#0b2541','#f46161ff','#ffd700','#4caf50']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
   })
+  console.log('Dispositivo chart rendered successfully')
 }
 
 // Handlers
@@ -233,29 +341,32 @@ async function onZoneChangeDispositivo(e) {
   await renderDispositivo()
 }
 
-// KPIs
+// KPIs - Ahora usando chartData ref en lugar de acceder directamente a los objetos Chart
 const todayTotalKwh = computed(() => {
-  const data = charts.hora?.data?.datasets?.[0]?.data ?? []
-  return data.reduce((a, v) => a + Number(v || 0), 0)
+  return chartData.value.hourly.reduce((a, v) => a + Number(v || 0), 0)
 })
+
 const currentPowerKwh = computed(() => {
-  const data = charts.hora?.data?.datasets?.[0]?.data ?? []
+  const data = chartData.value.hourly
   return data[data.length - 1] ?? 0
 })
+
 const monthTotalKwh = computed(() => {
-  const data = charts.mes?.data?.datasets?.[0]?.data ?? []
-  return data.reduce((a, v) => a + Number(v || 0), 0)
+  return chartData.value.monthly.reduce((a, v) => a + Number(v || 0), 0)
 })
+
 const dailyAvgKwh = computed(() => {
-  const data = charts.mes?.data?.datasets?.[0]?.data ?? []
+  const data = chartData.value.monthly
   return data.length ? (monthTotalKwh.value / data.length) : 0
 })
+
 const estimatedCost = computed(() => {
   const tarifa = 0.7
   return monthTotalKwh.value * tarifa
 })
+
 const projectedTodayKwh = computed(() => {
-  const data = charts.hora?.data?.datasets?.[0]?.data ?? []
+  const data = chartData.value.hourly
   if (!data.length) return 0
   const acum = data.reduce((a, b) => a + Number(b || 0), 0)
   const prom = acum / data.length
@@ -264,15 +375,73 @@ const projectedTodayKwh = computed(() => {
 
 // Mount
 onMounted(async () => {
-  await loadZones()
+  console.log('Dashboard mounting...')
+  await getCurrentUser()
+  console.log('Current user loaded, userId:', userId.value)
+
+  zones.value = await loadZones()
+  console.log('Zones loaded:', zones.value)
+
   if (zones.value.length) {
     selectedZoneIdHora.value = zones.value[0].id
     selectedZoneIdMes.value = zones.value[0].id
     selectedZoneIdDispositivo.value = zones.value[0].id
+    console.log('Selected zone IDs set')
+
+    // Usar nextTick para asegurar DOM listo y evitar loops
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    try {
+      await renderHora()
+      await renderMes()
+      await renderDispositivo()
+      isChartsReady.value = true
+      console.log('All charts rendered successfully')
+    } catch (error) {
+      console.error('Error rendering charts:', error)
+    }
+  } else {
+    console.warn('No zones found for user', userId.value)
   }
-  await renderHora()
-  await renderMes()
-  await renderDispositivo()
+})
+
+// Watcher para cambio de usuario
+watch(userId, async (newUserId, oldUserId) => {
+  if (newUserId !== oldUserId) {
+    // Destruir charts existentes
+    Object.values(charts).forEach(ch => ch && ch.destroy())
+    charts = { hora: null, mes: null, dispositivo: null }
+    // Limpiar datos reactivos
+    chartData.value = { hourly: [], monthly: [], deviceShare: { labels: [], data: [] } }
+    zones.value = []
+    devicesHora.value = []
+    devicesShareCache.value = []
+    selectedZoneIdHora.value = null
+    selectedZoneIdMes.value = null
+    selectedZoneIdDispositivo.value = null
+    selectedDeviceId.value = null
+    isChartsReady.value = false
+    // Recargar zonas y renderizar charts solo si hay usuario
+    if (newUserId) {
+      zones.value = await loadZones()
+      if (zones.value.length) {
+        selectedZoneIdHora.value = zones.value[0].id
+        selectedZoneIdMes.value = zones.value[0].id
+        selectedZoneIdDispositivo.value = zones.value[0].id
+        await nextTick()
+        await new Promise(resolve => setTimeout(resolve, 200))
+        try {
+          await renderHora()
+          await renderMes()
+          await renderDispositivo()
+          isChartsReady.value = true
+        } catch (error) {
+          console.error('Error rendering charts after user change:', error)
+        }
+      }
+    }
+  }
 })
 
 onBeforeUnmount(() => {
@@ -281,7 +450,18 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.chart-box canvas { min-height: 320px; width: 100%; }
+.chart-box {
+  max-height: 400px;
+  overflow: hidden;
+  position: relative;
+}
+.chart-box canvas {
+  min-height: 320px;
+  max-height: 360px;
+  height: 320px !important;
+  width: 100% !important;
+  display: block;
+}
 .grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
 .col-span-8 { grid-column: span 8 / span 8; }
 .col-span-4 { grid-column: span 4 / span 4; }

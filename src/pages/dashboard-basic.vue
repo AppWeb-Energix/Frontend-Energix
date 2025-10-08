@@ -47,12 +47,13 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { DevicesApi, onDeviceChange } from '@/shared/infrastructure/endpoints/devices.endpoint.js'
 import { usePersonalizationStore } from '@/stores/personalization'
+import { useAuth } from '@/composables/useAuth'
 
 const personalization = usePersonalizationStore()
+const { userId, getCurrentUser } = useAuth()
 
 Chart.register(...registerables)
 
-const userId = 8 // Cambia según tu auth real
 const tarifa = ref(0)
 const hasDevices = ref(false)
 const consumoMensual = ref([])
@@ -153,6 +154,7 @@ function drawCharts(devices) {
 let stopListening
 
 onMounted(async () => {
+  await getCurrentUser() // Inicializar usuario actual
   await reloadData()
   stopListening = onDeviceChange(async () => {
     console.log('📡 Cambio en dispositivos → recargando dashboard básico...')
