@@ -5,7 +5,6 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
     base: '/Frontend-Energix/',
     plugins: [vue()],
-    base: '/Frontend-Energix/',
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
