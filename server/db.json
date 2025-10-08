@@ -242,7 +242,7 @@
       "message": "¡Registro completado exitosamente!",
       "details": "Bienvenid@ Alexis! Tu plan es: BASIC. Comienza a monitorear tu consumo energético.",
       "timestamp": "2025-10-08T08:38:50.953Z",
-      "isRead": true,
+      "isRead": false,
       "id": 1
     },
     {
@@ -302,7 +302,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Alexis!",
       "timestamp": "2025-10-08T09:05:12.853Z",
-      "isRead": true,
+      "isRead": false,
       "id": 7
     },
     {
@@ -502,7 +502,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Alexis!",
       "timestamp": "2025-10-08T14:45:07.957Z",
-      "isRead": true,
+      "isRead": false,
       "id": 27
     },
     {
@@ -512,7 +512,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T14:55:37.658Z",
-      "isRead": true,
+      "isRead": false,
       "id": 28
     },
     {
@@ -522,7 +522,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T14:56:18.937Z",
-      "isRead": true,
+      "isRead": false,
       "id": 29
     },
     {
@@ -532,7 +532,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T14:56:45.936Z",
-      "isRead": true,
+      "isRead": false,
       "id": 30
     },
     {
@@ -542,7 +542,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T15:02:28.510Z",
-      "isRead": true,
+      "isRead": false,
       "id": 31
     },
     {
@@ -552,7 +552,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T15:02:47.369Z",
-      "isRead": true,
+      "isRead": false,
       "id": 32
     },
     {
@@ -562,7 +562,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T15:06:57.743Z",
-      "isRead": true,
+      "isRead": false,
       "id": 33
     },
     {
@@ -572,7 +572,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T15:07:24.870Z",
-      "isRead": true,
+      "isRead": false,
       "id": 34
     },
     {
@@ -582,7 +582,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T15:14:28.878Z",
-      "isRead": true,
+      "isRead": false,
       "id": 35
     },
     {
@@ -592,7 +592,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T15:22:03.258Z",
-      "isRead": true,
+      "isRead": false,
       "id": 36
     },
     {
@@ -602,7 +602,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T15:27:41.694Z",
-      "isRead": true,
+      "isRead": false,
       "id": 37
     },
     {
@@ -612,7 +612,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un manual",
       "timestamp": "2025-10-08T15:28:18.968Z",
-      "isRead": true,
+      "isRead": false,
       "id": 38
     },
     {
@@ -622,7 +622,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Dispositivo 1 (manual)",
       "timestamp": "2025-10-08T15:30:23.852Z",
-      "isRead": true,
+      "isRead": false,
       "id": 39
     },
     {

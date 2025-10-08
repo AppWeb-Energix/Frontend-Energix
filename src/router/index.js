@@ -32,6 +32,7 @@ const getDashboardRouteName = (plan) => {
 const DashboardFamily = () => import('../pages/dashboard.vue')
 const DashboardStudent = () => import('../pages/dashboard-student.vue')
 const DashboardBasic = () => import('../pages/dashboard-basic.vue')
+
 const Usage = () => import('../pages/usage.vue')
 const Alerts = () => import('../pages/alerts.vue')
 const Reports = () => import('../pages/reports.vue')
@@ -39,6 +40,10 @@ const Configuration = () => import('../pages/configuration.vue')
 const NotFound = () => import('../pages/notfound.vue')
 const Subscriptions = () => import('../pages/subscriptions.vue')
 
+
+// Eager load para rutas críticas de autenticación
+import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
 
 // Eager load para rutas críticas de autenticación
 import Login from '../views/Login.vue'
@@ -80,7 +85,6 @@ export const router = createRouter({
             component: Register,
             meta: { title: 'Sign Up', public: true }
         },
-
 
         // RUTA DINÁMICA DE DASHBOARD (El nombre 'dashboard' actúa como proxy)
         {
