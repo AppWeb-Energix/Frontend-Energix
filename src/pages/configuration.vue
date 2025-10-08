@@ -130,58 +130,6 @@
         </div>
       </div>
 
-      <!-- Sección Dispositivos -->
-      <div class="section-card">
-        <h3 class="section-title">Dispositivos</h3>
-
-        <div class="device-alert">
-          <p>
-            Alcanzaste el límite de tu plan (2/2).
-            <a href="#" class="alert-link">Aumentar límite</a>
-          </p>
-        </div>
-
-        <div class="devices-list">
-          <div class="device-item">
-            <div class="device-info">
-              <div class="status-indicator status-online"></div>
-              <div class="device-details">
-                <h4 class="device-name">Refrigerador <span class="device-status">online</span></h4>
-                <p class="device-description">Activo y monitoreando</p>
-              </div>
-            </div>
-            <div class="device-timestamp">15/9/2025, 6:00:08 p. m.</div>
-          </div>
-
-          <div class="device-item">
-            <div class="device-info">
-              <div class="status-indicator status-online"></div>
-              <div class="device-details">
-                <h4 class="device-name">Laptop <span class="device-status">online</span></h4>
-                <p class="device-description">Activo y monitoreando</p>
-              </div>
-            </div>
-            <div class="device-timestamp">15/9/2025, 6:00:08 p. m.</div>
-          </div>
-        </div>
-
-        <h4 class="subsection-title">Nuevo dispositivo</h4>
-        <div class="add-device-grid">
-          <div class="form-group">
-            <label class="form-label">Nuevo dispositivo</label>
-            <input v-model="newDevice.type" placeholder="Ej. Foca solar" class="form-input" />
-            <p class="form-help">Tu plan permite máximo 2 dispositivos. Tienes 2/2.</p>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Marca/Modelo (opcional)</label>
-            <input v-model="newDevice.model" placeholder="Ej. Philips Hue" class="form-input" />
-          </div>
-          <div class="add-device-button-container">
-            <button @click="addDevice" :disabled="devices.length >= 2" class="btn-primary full-width">Añadir</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Sección Personalización del panel -->
       <div class="section-card">
         <h3 class="section-title">Personalización del panel</h3>
@@ -242,38 +190,23 @@
         </div>
       </div>
 
-      <!-- Sección Integración con factura -->
-      <div class="section-card">
-        <h3 class="section-title">Integración con factura</h3>
-        <p class="section-description">
-          Sube tu CV con recuerdos; cuando tenemos datos históricos, compartimos el consumo real y el margen estimado.
-        </p>
-
-        <div class="file-upload-section">
-          <button @click="selectInvoiceFiles" class="btn-file-upload">
-            📄 Seleccionar archivos
-          </button>
-          <p class="file-status">Sin archivos seleccionados</p>
-        </div>
-      </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref } from 'vue'
+import { usePersonalizationStore } from '../stores/personalization'
 
-// Referencias reactivas
-const fileInput = ref(null)
+const personalization = usePersonalizationStore()
 
-// Estado reactivo del formulario
+// Estados locales para otras secciones (estos no están en Pinia)
 const profile = reactive({
-  name: 'Jorge',
-  lastName: 'Benavides',
-  email: 'jorge12@gmail.com',
-  dni: '99999999',
-  district: 'Miraflores',
+  name: '',
+  lastName: '',
+  email: '',
+  dni: '',
+  district: '',
   invoiceFileName: ''
 })
 
@@ -285,40 +218,9 @@ const preferences = reactive({
   baseRate: 'S',
   dailyLimit: '8',
   enableDailySummary: false,
-  dailySummary: true,
-  limit80: true,
-  unusualAlert: true
-})
-
-const newDevice = reactive({
-  type: '',
-  model: ''
-})
-
-const devices = reactive([
-  {
-    id: 1,
-    name: 'Refrigerador',
-    status: 'Activo y monitoreando',
-    date: '15/9/2025, 6:00:08 p. m.',
-    isOnline: true
-  },
-  {
-    id: 2,
-    name: 'Laptop',
-    status: 'Activo y monitoreando',
-    date: '15/9/2025, 6:00:08 p. m.',
-    isOnline: true
-  }
-])
-
-const personalization = reactive({
-  kpiCurrent: true,
-  kpiCost: true,
-  kpiMonthly: true,
-  chartHourly: true,
-  chartMonthly: false,
-  chartDevice: true
+  dailySummary: false,
+  limit80: false,
+  unusualAlert: false
 })
 
 const security = reactive({
@@ -327,7 +229,17 @@ const security = reactive({
   confirmPassword: ''
 })
 
-// Métodos
+const fileInput = ref(null)
+
+// Funciones para perfil
+const saveProfile = () => {
+  alert('Perfil guardado correctamente')
+}
+
+const cancelProfile = () => {
+  alert('Cambios cancelados')
+}
+
 const handleFileUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
@@ -335,44 +247,9 @@ const handleFileUpload = (event) => {
   }
 }
 
-const saveProfile = () => {
-  alert('Perfil guardado correctamente')
-}
-
-const cancelProfile = () => {
-  // Lógica de cancelación sin log
-}
-
-const addDevice = () => {
-  if (devices.length >= 2) {
-    alert('Has alcanzado el límite de dispositivos para tu plan')
-    return
-  }
-
-  if (!newDevice.type || !newDevice.model) {
-    alert('Por favor completa todos los campos del dispositivo')
-    return
-  }
-
-  const device = {
-    id: Date.now(),
-    type: newDevice.type,
-    model: newDevice.model,
-    name: newDevice.type,
-    status: 'Configurando...',
-    date: new Date().toLocaleString('es-PE'),
-    isOnline: false
-  }
-
-  devices.push(device)
-  newDevice.type = ''
-  newDevice.model = ''
-
-  alert('Dispositivo agregado correctamente')
-}
-
+// Funciones para personalización
 const savePersonalization = () => {
-  alert('Personalización guardada correctamente')
+  alert('Personalización guardada y reflejada en el Dashboard')
 }
 
 const resetPersonalization = () => {
@@ -382,35 +259,19 @@ const resetPersonalization = () => {
   personalization.chartHourly = true
   personalization.chartMonthly = false
   personalization.chartDevice = true
-
   alert('Personalización restablecida')
 }
 
+// Función para seguridad
 const updatePassword = () => {
-  if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
-    alert('Por favor complete todos los campos de contraseña')
-    return
-  }
-
   if (security.newPassword !== security.confirmPassword) {
     alert('Las contraseñas no coinciden')
     return
   }
-
-  if (security.newPassword.length < 8) {
-    alert('La contraseña debe tener al menos 8 caracteres')
-    return
-  }
-
+  alert('Contraseña actualizada correctamente')
   security.currentPassword = ''
   security.newPassword = ''
   security.confirmPassword = ''
-
-  alert('Contraseña actualizada correctamente')
-}
-
-const selectInvoiceFiles = () => {
-  alert('Funcionalidad de selección de archivos de factura')
 }
 </script>
 
@@ -454,13 +315,6 @@ const selectInvoiceFiles = () => {
   font-weight: 600;
   color: #374151;
   margin-bottom: 24px;
-}
-
-.subsection-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 16px;
 }
 
 /* TARJETAS DE SECCIÓN */
@@ -562,13 +416,6 @@ const selectInvoiceFiles = () => {
   gap: 24px;
 }
 
-.add-device-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 16px;
-  align-items: end;
-}
-
 .personalization-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -629,87 +476,6 @@ const selectInvoiceFiles = () => {
   cursor: pointer;
 }
 
-/* DISPOSITIVOS */
-.device-alert {
-  background-color: #eff6ff;
-  border-left: 4px solid #60a5fa;
-  padding: 16px;
-  margin-bottom: 24px;
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-.device-alert p {
-  font-size: 14px;
-  color: #1e40af;
-  margin: 0;
-}
-
-.alert-link {
-  color: #1d4ed8;
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.alert-link:hover {
-  color: #1e40af;
-}
-
-.devices-list {
-  margin-bottom: 32px;
-}
-
-.device-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background-color: #f9fafb;
-  margin-bottom: 12px;
-}
-
-.device-info {
-  display: flex;
-  align-items: center;
-}
-
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.status-online {
-  background-color: #10b981;
-}
-
-.device-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
-  margin: 0 0 4px 0;
-}
-
-.device-status {
-  font-size: 12px;
-  color: #6b7280;
-  font-weight: 400;
-}
-
-.device-description {
-  font-size: 12px;
-  color: #6b7280;
-  margin: 0;
-}
-
-.device-timestamp {
-  font-size: 12px;
-  color: #6b7280;
-}
-
 /* BOTONES */
 .btn-primary {
   background-color: #0b2541;
@@ -748,25 +514,6 @@ const selectInvoiceFiles = () => {
   background-color: #f9fafb;
 }
 
-.btn-file-upload {
-  background-color: #4b5563;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-file-upload:hover {
-  background-color: #374151;
-}
-
 .button-group {
   display: flex;
   gap: 16px;
@@ -775,10 +522,6 @@ const selectInvoiceFiles = () => {
 
 .button-container {
   margin-top: 32px;
-}
-
-.full-width {
-  width: 100%;
 }
 
 /* FILE UPLOAD */
@@ -813,30 +556,6 @@ const selectInvoiceFiles = () => {
   background-color: #e5e7eb;
 }
 
-.add-device-button-container {
-  padding-top: 28px;
-}
-
-/* OTRAS SECCIONES */
-.section-description {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-
-.file-upload-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.file-status {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
-}
-
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .form-grid-2,
@@ -846,16 +565,8 @@ const selectInvoiceFiles = () => {
     grid-template-columns: 1fr;
   }
 
-  .add-device-grid {
-    grid-template-columns: 1fr;
-  }
-
   .personalization-grid {
     grid-template-columns: 1fr;
-  }
-
-  .add-device-button-container {
-    padding-top: 0;
   }
 }
 </style>
