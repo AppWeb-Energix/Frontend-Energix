@@ -29,8 +29,8 @@ export async function registerService(payload){
     return user;
 }
 
-export async function loginService({ email }){
-    const { user, token } = await AuthApi.login({ email });
+export async function loginService({ email, password }){
+    const { user, token } = await AuthApi.login({ email, password });
     localStorage.setItem('token', token || 'dev-token');
     localStorage.setItem('energix-user', JSON.stringify(user));
     localStorage.setItem('energix-plan', user.plan);
@@ -53,4 +53,24 @@ export async function loginService({ email }){
 export function logoutService(){
     ['token','energix-user','energix-plan'].forEach(k => localStorage.removeItem(k));
     setAuthenticated(false);
+}
+
+/**
+ * Cambia la contraseña del usuario autenticado
+ * @param {number|string} userId
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {Promise<void>}
+ */
+export async function changePasswordService(userId, currentPassword, newPassword) {
+    const response = await fetch(`/api/v1/users/${userId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+    });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Error al actualizar la contraseña');
+    }
+    return;
 }

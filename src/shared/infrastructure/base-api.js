@@ -1,32 +1,70 @@
-const BASE_URL = (import.meta.env.VITE_ENERGIX_API_URL || 'http://localhost:3001/api/v1').replace(/\/+$/, '');
+// shared/infrastructure/base-api.js
+const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
-class Http {
-    constructor(baseUrl){ this.baseUrl = baseUrl; }
-
-    async request(path, opts = {}) {
-        const url = `${this.baseUrl}${path}`;
-        const headers = new Headers({ 'Content-Type':'application/json', ...(opts.headers||{}) });
-
-        try {
-            const res = await fetch(url, { ...opts, headers });
-            const isJson = (res.headers.get('content-type') || '').includes('application/json');
-            const data = isJson ? await res.json().catch(() => ({})) : await res.text();
-
-            if (!res.ok) {
-                const message = (isJson ? data?.error || data?.message : data) || 'HTTP error';
-                throw { status: res.status, message, url };
-            }
-            return data;
-        } catch (err) {
-            console.error('HTTP NETWORK ERROR →', { url, err });
-            throw { network: true, message: 'No se pudo conectar a la API', url, cause: err };
-        }
-    }
-
-    get(p){ return this.request(p, { method:'GET' }); }
-    post(p,b){ return this.request(p, { method:'POST', body: JSON.stringify(b) }); }
-    patch(p,b){ return this.request(p, { method:'PATCH', body: JSON.stringify(b) }); }
-    delete(p){ return this.request(p, { method:'DELETE' }); }
+async function parseJsonSafely(res) {
+    // Algunas rutas (DELETE en json-server) devuelven 200/204 sin cuerpo.
+    const text = await res.text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch { return null; }
 }
 
-export const http = new Http(BASE_URL);
+async function handleError(res) {
+    let message = res.statusText || 'Error de red';
+    try {
+        const txt = await res.text();
+        if (txt) {
+            const json = JSON.parse(txt);
+            message = json?.message || message;
+        }
+    } catch { /* ignore */ }
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+}
+
+export const http = {
+    async get(url) {
+        const res = await fetch(BASE + url);
+        if (!res.ok) return handleError(res);
+        return await res.json();
+    },
+
+    async post(url, body) {
+        const res = await fetch(BASE + url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) return handleError(res);
+        return await res.json();
+    },
+
+    async put(url, body) {
+        const res = await fetch(BASE + url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) return handleError(res);
+        return await res.json();
+    },
+
+    async patch(url, body) {
+        const res = await fetch(BASE + url, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) return handleError(res);
+        return await res.json();
+    },
+
+    // ✅ TOLERA respuestas sin cuerpo (200/204) → no rompe la UI
+    async delete(url) {
+        const res = await fetch(BASE + url, { method: 'DELETE' });
+        if (!res.ok) return handleError(res);
+        // Si no hay JSON, devolvemos true para indicar éxito
+        const json = await parseJsonSafely(res);
+        return json ?? true;
+    },
+};

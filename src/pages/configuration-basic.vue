@@ -43,44 +43,6 @@
         </div>
       </div>
 
-      <!-- Sección Personalización del panel -->
-      <div class="section-card">
-        <h3 class="section-title">Personalización del panel</h3>
-
-        <div class="personalization-grid">
-          <div class="checkbox-group">
-            <input type="checkbox" id="kpiCurrent" v-model="kpiCurrent" class="form-checkbox" />
-            <label for="kpiCurrent" class="checkbox-label">KPI Consumo actual</label>
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="kpiCost" v-model="kpiCost" class="form-checkbox" />
-            <label for="kpiCost" class="checkbox-label">KPI Costo estimado</label>
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="kpiMonthly" v-model="kpiMonthly" class="form-checkbox" />
-            <label for="kpiMonthly" class="checkbox-label">KPI Consumo mensual</label>
-          </div>
-
-          <div class="checkbox-group">
-            <input type="checkbox" id="chartHourly" v-model="chartHourly" class="form-checkbox" />
-            <label for="chartHourly" class="checkbox-label">Gráfico: Consumo por hora (hoy)</label>
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="chartMonthly" v-model="chartMonthly" class="form-checkbox" />
-            <label for="chartMonthly" class="checkbox-label">Gráfico: Consumo este mes (ahorro)</label>
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="chartDevice" v-model="chartDevice" class="form-checkbox" />
-            <label for="chartDevice" class="checkbox-label">Gráfico: Consumo por dispositivo (Status)</label>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button @click="savePersonalization" class="btn-primary">Guardar cambios</button>
-          <button @click="resetPersonalization" class="btn-secondary">Restablecer</button>
-        </div>
-      </div>
-
       <!-- Sección Seguridad -->
       <div class="section-card">
         <h3 class="section-title">Seguridad</h3>
@@ -109,19 +71,7 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { usePersonalizationStore } from '../stores/personalization'
 import { changePasswordService } from '@/modules/auth/auth.service'
-
-const personalizationStore = usePersonalizationStore()
-const {
-  kpiCurrent,
-  kpiCost,
-  kpiMonthly,
-  chartHourly,
-  chartMonthly,
-  chartDevice
-} = storeToRefs(personalizationStore)
 
 function getUserId() {
   try {
@@ -145,15 +95,6 @@ const profile = reactive({
   invoiceFileName: ''
 })
 
-const preferences = reactive({
-  baseRate: 'S',
-  dailyLimit: '8',
-  enableDailySummary: false,
-  dailySummary: false,
-  limit80: false,
-  unusualAlert: false
-})
-
 const security = reactive({
   currentPassword: '',
   newPassword: '',
@@ -173,7 +114,6 @@ onMounted(() => {
     profile.district = user.district || ''
     // No se carga password ni plan aquí
   }
-  personalizationStore.loadPersonalization() // Cargar personalización del usuario actual
 })
 
 // Funciones para perfil
@@ -221,16 +161,6 @@ const handleFileUpload = (event) => {
   if (file) {
     profile.invoiceFileName = file.name
   }
-}
-
-// Funciones para personalización
-const savePersonalization = () => {
-  personalizationStore.savePersonalization()
-  alert('Personalización guardada y reflejada en el Dashboard')
-}
-const resetPersonalization = () => {
-  personalizationStore.resetToDefaults()
-  alert('Personalización restablecida')
 }
 
 // Función para seguridad
@@ -387,39 +317,6 @@ const updatePassword = async () => {
   gap: 24px;
 }
 
-.personalization-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-/* CHECKBOXES */
-.checkbox-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.form-checkbox {
-  width: 16px;
-  height: 16px;
-  margin-right: 12px;
-  accent-color: #0b2541;
-}
-
-.checkbox-label {
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-}
-
 /* BOTONES */
 .btn-primary {
   background-color: #0b2541;
@@ -506,10 +403,6 @@ const updatePassword = async () => {
   .plan-grid,
   .preferences-grid,
   .security-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .personalization-grid {
     grid-template-columns: 1fr;
   }
 }

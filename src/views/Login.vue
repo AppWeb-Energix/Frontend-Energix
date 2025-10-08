@@ -61,8 +61,10 @@ import PasswordField from '../components/auth/PasswordField.vue'
 import { loginService } from '@/modules/auth/auth.service'
 import { isValidEmail, isValidPassword } from '../utils/validators.js'
 import { useAsyncAction } from '../composables/useAsyncAction.js'
+import { usePersonalizationStore } from '../stores/personalization.js'
 
 const router = useRouter()
+const personalizationStore = usePersonalizationStore()
 
 const MESSAGES = {
   title: 'Bienvenido a Energix',
@@ -127,7 +129,9 @@ const handleSubmit = async () => {
 
   try {
     await execute(async () => {
-      const user = await loginService({ email: email.value })
+      const user = await loginService({ email: email.value, password: password.value })
+      personalizationStore.loadPersonalization() // Carga la personalización del usuario que acaba de iniciar sesión
+      personalizationStore.savePersonalization() // Guarda la personalización del usuario al iniciar sesión
       await router.replace({
         name: 'dashboard'
       })

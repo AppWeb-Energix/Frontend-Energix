@@ -7,11 +7,11 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
  * @param {boolean} value - Estado de autenticación
  */
 export function setAuthenticated(value = true) {
-  try {
-    localStorage.setItem('isAuthenticated', String(value))
-  } catch (e) {
-    // Error silencioso - no es crítico para el funcionamiento
-  }
+    try {
+        localStorage.setItem('isAuthenticated', String(value))
+    } catch (e) {
+        // Error silencioso - no es crítico para el funcionamiento
+    }
 }
 
 /**
@@ -19,22 +19,22 @@ export function setAuthenticated(value = true) {
  * @returns {boolean}
  */
 export function isAuthenticated() {
-  try {
-    return localStorage.getItem('isAuthenticated') === 'true'
-  } catch (e) {
-    return false
-  }
+    try {
+        return localStorage.getItem('isAuthenticated') === 'true'
+    } catch (e) {
+        return false
+    }
 }
 
 /**
  * Cierra la sesión del usuario
  */
 export function logout() {
-  try {
-    localStorage.removeItem('isAuthenticated')
-  } catch (e) {
-    // Error silencioso - no es crítico para el funcionamiento
-  }
+    try {
+        localStorage.removeItem('isAuthenticated')
+    } catch (e) {
+        // Error silencioso - no es crítico para el funcionamiento
+    }
 }
 
 /**
@@ -43,18 +43,18 @@ export function logout() {
  * @returns {Promise<{valid: boolean}>}
  */
 export async function validateCode(code) {
-  await sleep(600)
+    await sleep(600)
 
-  // Simular error de red aleatoriamente (5% de probabilidad)
-  if (Math.random() < 0.05) {
-    throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
-  }
+    // Simular error de red aleatoriamente (5% de probabilidad)
+    if (Math.random() < 0.05) {
+        throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
+    }
 
-  if (code === 'Energix2025') {
-    return { valid: true }
-  }
+    if (code === 'Energix2025') {
+        return { valid: true }
+    }
 
-  throw { message: 'Código inválido' }
+    throw { message: 'Código inválido' }
 }
 
 /**
@@ -63,25 +63,25 @@ export async function validateCode(code) {
  * @returns {Promise<{success: boolean, user: Object}>}
  */
 export async function login(credentials) {
-  await sleep(700)
+    await sleep(700)
 
-  // Simular error de red aleatoriamente (5% de probabilidad)
-  if (Math.random() < 0.05) {
-    throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
-  }
-
-  // Validar credenciales mock
-  if (credentials.email === 'test@ejemplo.com' && credentials.password === 'password') {
-    return {
-      success: true,
-      user: {
-        email: credentials.email,
-        name: 'Usuario Test'
-      }
+    // Simular error de red aleatoriamente (5% de probabilidad)
+    if (Math.random() < 0.05) {
+        throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
     }
-  }
 
-  throw { message: 'Correo electrónico o contraseña incorrectos' }
+    // Validar credenciales mock
+    if (credentials.email === 'test@ejemplo.com' && credentials.password === 'password') {
+        return {
+            success: true,
+            user: {
+                email: credentials.email,
+                name: 'Usuario Test'
+            }
+        }
+    }
+
+    throw { message: 'Correo electrónico o contraseña incorrectos' }
 }
 
 /**
@@ -90,29 +90,29 @@ export async function login(credentials) {
  * @returns {Promise<{success: boolean, user: Object}>}
  */
 export async function register(payload) {
-  await sleep(700)
+    await sleep(700)
 
-  // Simular error de red aleatoriamente (5% de probabilidad)
-  if (Math.random() < 0.05) {
-    throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
-  }
-
-  // Simular email ya registrado
-  if (payload.email === 'already@taken.com') {
-    throw { field: 'email', message: 'Correo ya en uso' }
-  }
-
-  // Validar código en el momento del registro
-  if (payload.code !== 'Energix2025') {
-    throw { field: 'code', message: 'Código inválido o expirado' }
-  }
-
-  // Registro exitoso
-  return {
-    success: true,
-    user: {
-      name: payload.name,
-      email: payload.email
+    // Simular error de red aleatoriamente (5% de probabilidad)
+    if (Math.random() < 0.05) {
+        throw { network: true, message: 'Error de conexión. Intenta nuevamente.' }
     }
-  }
+
+    // Simular email ya registrado
+    if (payload.email === 'already@taken.com') {
+        throw { field: 'email', message: 'Correo ya en uso' }
+    }
+
+    // Validar código en el momento del registro
+    if (payload.code !== 'Energix2025') {
+        throw { field: 'code', message: 'Código inválido o expirado' }
+    }
+
+    // Registro exitoso
+    return {
+        success: true,
+        user: {
+            name: payload.name,
+            email: payload.email
+        }
+    }
 }

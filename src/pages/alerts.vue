@@ -5,8 +5,11 @@
     <div class="alerts-content">
       <div class="alerts-header">
         <h2 class="alerts-title">Alertas</h2>
+
         <div class="alerts-actions">
+          <!-- Simular solo en Estudiantil / Familiar -->
           <button
+              v-if="plan !== 'basic'"
               class="btn-outline"
               @click="simulateAlert"
               :disabled="loading"
@@ -15,6 +18,7 @@
             <span class="add-icon">+</span>
             Simular alerta
           </button>
+
           <button
               class="btn-outline"
               @click="markAllAsRead"
@@ -26,30 +30,25 @@
         </div>
       </div>
 
-      <!-- Contador de alertas no leídas -->
+      <!-- Contador -->
       <div v-if="unreadCount > 0" class="unread-badge">
         {{ unreadCount }} alerta{{ unreadCount > 1 ? 's' : '' }} sin leer
       </div>
 
-      <div class="alerts-list" :class="{ loading: loading }">
+      <!-- Lista -->
+      <div class="alerts-list" :class="{ loading }">
         <template v-if="alerts.length">
           <div
               v-for="a in alerts"
               :key="a.id"
               class="alert-item"
-              :class="[
-              { read: a.isRead },
-              a.type === 'warning' ? 'alert-warning' : 'alert-info'
-            ]"
+              :class="[{ read: a.isRead }, a.type === 'warning' ? 'alert-warning' : 'alert-info']"
               tabindex="0"
               @click="markAsRead(a.id)"
           >
             <div class="alert-content">
               <div class="alert-header-row">
-                <div
-                    class="alert-badge"
-                    :class="{ 'alert-badge-info': a.type === 'info' }"
-                >
+                <div class="alert-badge" :class="{ 'alert-badge-info': a.type === 'info' }">
                   {{ a.badge }}
                 </div>
                 <div class="alert-timestamp">{{ formatDate(a.timestamp) }}</div>
@@ -57,7 +56,6 @@
               <div class="alert-message">{{ a.message }}</div>
               <div class="alert-details">{{ a.details }}</div>
             </div>
-            <!-- Indicador de no leída -->
             <div v-if="!a.isRead" class="unread-indicator"></div>
           </div>
         </template>
@@ -77,133 +75,99 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { AlertsApi } from '@/shared/infrastructure/endpoints/alerts.endpoint';
+import { ref, computed, onMounted } from 'vue'
+import { AlertsApi } from '@/shared/infrastructure/endpoints/alerts.endpoint'
 
-const loading = ref(false);
-const alerts = ref([]);
-const currentUser = ref(null);
+// Estado
+const loading = ref(false)
+const alerts = ref([])
+const currentUser = ref(null)
+const plan = ref('basic')
 
-// Obtener usuario actual
-const getCurrentUser = () => {
+// Helpers
+function getCurrentUser() {
   try {
-    const userData = localStorage.getItem('energix-user');
-    return userData ? JSON.parse(userData) : null;
+    return JSON.parse(localStorage.getItem('energix-user') || 'null')
   } catch {
-    return null;
+    return null
   }
-};
+}
 
-// Contador de alertas no leídas
-const unreadCount = computed(() =>
-    alerts.value.filter(a => !a.isRead).length
-);
+const unreadCount = computed(() => alerts.value.filter(a => !a.isRead).length)
 
-// Cargar alertas del usuario desde la API
-const loadAlerts = async () => {
-  loading.value = true;
+// Cargar alertas
+async function loadAlerts () {
+  loading.value = true
   try {
-    currentUser.value = getCurrentUser();
+    currentUser.value = getCurrentUser()
+    plan.value = currentUser.value?.plan || 'basic'
 
     if (!currentUser.value) {
-      alerts.value = [];
-      return;
+      alerts.value = []
+      return
     }
 
-    // Obtener alertas del usuario actual
-    const data = await AlertsApi.getByUserId(currentUser.value.id);
+    const data = await AlertsApi.getByUserId(currentUser.value.id)
 
-    // Ordenar: no leídas primero, luego por fecha descendente
+    // no leídas primero, luego por fecha desc
     alerts.value = data.sort((a, b) => {
-      if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
-      return new Date(b.timestamp) - new Date(a.timestamp);
-    });
-
-  } catch (error) {
-    console.error('Error al cargar alertas:', error);
-    alerts.value = [];
+      if (a.isRead !== b.isRead) return a.isRead ? 1 : -1
+      return new Date(b.timestamp) - new Date(a.timestamp)
+    })
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-// Formatear fecha al estilo peruano
-const formatDate = (timestamp) => {
-  return new Intl.DateTimeFormat('es-PE', {
-    dateStyle: 'short',
-    timeStyle: 'medium'
-  }).format(new Date(timestamp));
-};
+// Formateo fecha
+function formatDate (ts) {
+  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'medium' })
+      .format(new Date(ts))
+}
 
-// Marcar una alerta como leída
-const markAsRead = async (id) => {
-  const alert = alerts.value.find(a => a.id === id);
-  if (alert && !alert.isRead) {
-    try {
-      await AlertsApi.markAsRead(id);
-      alert.isRead = true;
-    } catch (error) {
-      console.error('Error al marcar alerta como leída:', error);
-    }
-  }
-};
-
-// Marcar todas como leídas
-const markAllAsRead = async () => {
-  if (unreadCount.value === 0) return;
-
+// Acciones
+async function markAsRead (id) {
+  const alert = alerts.value.find(a => a.id === id)
+  if (!alert || alert.isRead) return
   try {
-    await AlertsApi.markAllAsRead(currentUser.value.id);
-    alerts.value.forEach(a => { a.isRead = true; });
-  } catch (error) {
-    console.error('Error al marcar todas como leídas:', error);
+    await AlertsApi.markAsRead(id)
+    alert.isRead = true
+  } catch (e) {
+    console.error('markAsRead error:', e)
   }
-};
+}
 
-// 🔥 SIMULAR ALERTAS AUTOMÁTICAS
-const simulateAlert = async () => {
-  if (!currentUser.value) return;
-
-  const alertTypes = [
-    {
-      type: 'high_consumption',
-      data: { percentage: 85, current: 255, limit: 300 }
-    },
-    {
-      type: 'new_device',
-      data: { deviceType: 'enchufe inteligente', location: 'sala' }
-    },
-    {
-      type: 'peak_hours',
-      data: {}
-    },
-    {
-      type: 'monthly_report',
-      data: { month: 'septiembre' }
-    }
-  ];
-
-  // Elegir tipo aleatorio
-  const randomType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
-
+async function markAllAsRead () {
+  if (!currentUser.value || unreadCount.value === 0) return
   try {
-    await AlertsApi.generateSystemAlert(
-        currentUser.value.id,
-        randomType.type,
-        randomType.data
-    );
-
-    // Recargar alertas
-    await loadAlerts();
-  } catch (error) {
-    console.error('Error al generar alerta:', error);
+    await AlertsApi.markAllAsRead(currentUser.value.id)
+    alerts.value.forEach(a => { a.isRead = true })
+  } catch (e) {
+    console.error('markAllAsRead error:', e)
   }
-};
+}
 
-onMounted(async () => {
-  await loadAlerts();
-});
+// Solo para probar en Estudiantil/Familiar
+async function simulateAlert () {
+  if (!currentUser.value || plan.value === 'basic') return
+  const candidates = [
+    { type: 'high_consumption', data: { percentage: 85, current: 255, limit: 300 } },
+    { type: 'new_device',       data: { deviceType: 'enchufe inteligente' } },
+    { type: 'peak_hours',       data: {} },
+    { type: 'monthly_report',   data: { month: 'septiembre' } }
+  ]
+  const pick = candidates[Math.floor(Math.random() * candidates.length)]
+  try {
+    await AlertsApi.generateSystemAlert(currentUser.value.id, pick.type, pick.data)
+    await loadAlerts()
+  } catch (e) {
+    console.error('simulateAlert error:', e)
+  }
+}
+
+onMounted(loadAlerts)
 </script>
+
 
 <style scoped>
 .alerts-container {
