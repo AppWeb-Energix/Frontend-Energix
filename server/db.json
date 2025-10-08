@@ -237,6 +237,16 @@
         "dailyAvg": 256.23333333333335
       },
       "id": 6
+    },
+    {
+      "userId": 2,
+      "linkedAt": "2025-10-08T21:11:46.937Z",
+      "status": "on",
+      "online": true,
+      "zoneId": 1,
+      "name": "Dispositivo 2",
+      "type": "sensor",
+      "id": 7
     }
   ],
   "zones": [
@@ -1371,6 +1381,136 @@
       "timestamp": "2025-10-08T20:28:42.674Z",
       "isRead": false,
       "id": 112
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T20:40:35.750Z",
+      "isRead": false,
+      "id": 113
+    },
+    {
+      "userId": 7,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, aldo2!",
+      "timestamp": "2025-10-08T20:41:14.517Z",
+      "isRead": false,
+      "id": 114
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T20:41:30.257Z",
+      "isRead": false,
+      "id": 115
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T20:44:59.858Z",
+      "isRead": false,
+      "id": 116
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T20:45:41.025Z",
+      "isRead": false,
+      "id": 117
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T20:56:08.919Z",
+      "isRead": false,
+      "id": 118
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T21:04:17.988Z",
+      "isRead": false,
+      "id": 119
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T21:10:47.274Z",
+      "isRead": false,
+      "id": 120
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T21:10:52.950Z",
+      "isRead": false,
+      "id": 121
+    },
+    {
+      "userId": 7,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, aldo2!",
+      "timestamp": "2025-10-08T21:11:00.283Z",
+      "isRead": false,
+      "id": 122
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Alexis!",
+      "timestamp": "2025-10-08T21:11:28.048Z",
+      "isRead": false,
+      "id": 123
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Nuevo dispositivo conectado",
+      "details": "Se vinculó un sensor",
+      "timestamp": "2025-10-08T21:11:46.962Z",
+      "isRead": false,
+      "id": 124
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Dispositivo encendido",
+      "details": "Dispositivo 2 ahora está encendido",
+      "timestamp": "2025-10-08T21:11:59.994Z",
+      "isRead": false,
+      "id": 125
     }
   ]
 }

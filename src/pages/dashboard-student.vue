@@ -237,6 +237,7 @@ onMounted(async () => {
   onDeviceChange(async () => {
     await reloadAll()
   })
+  personalization.loadPersonalization()
 })
 
 onBeforeUnmount(() => Object.values(charts).forEach(ch => ch?.destroy()))

@@ -92,6 +92,10 @@ import { usePersonalizationStore } from '@/stores/personalization'
 
 const personalization = usePersonalizationStore()
 
+onMounted(() => {
+  personalization.loadPersonalization()
+})
+
 Chart.register(...registerables)
 
 // Estado

@@ -158,6 +158,8 @@ onMounted(async () => {
     console.log('📡 Cambio en dispositivos → recargando dashboard básico...')
     await reloadData()
   })
+
+  personalization.loadPersonalization()
 })
 
 onBeforeUnmount(() => {
