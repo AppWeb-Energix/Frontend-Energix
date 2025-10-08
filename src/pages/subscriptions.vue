@@ -16,7 +16,7 @@
 
     <div v-if="selectedOption === 'Cambiar plan'" class="plans-grid">
       <!-- Plan Básico -->
-      <article class="plan-card basic">
+      <article class="plan-card basic" :class="{ 'is-current': user?.plan === 'basic' }">
         <header class="plan-head">
           <h3>Plan Básico</h3>
           <p class="meta">Dispositivos: 1 · Historial: 7 días</p>
@@ -26,11 +26,17 @@
           <li>Alertas básicas (límite mensual)</li>
           <li>Agrega dispositivos manualmente</li>
         </ul>
-        <button class="btn btn-primary">Elegir Plan Básico</button>
+        <button
+            v-if="user?.plan === 'basic'"
+            class="btn btn-muted" disabled>Plan actual</button>
+        <button
+            v-else
+            class="btn btn-primary"
+            @click="changePlan('basic')">Elegir Plan Básico</button>
       </article>
 
       <!-- Plan Estudiantil (actual) -->
-      <article class="plan-card student is-current">
+      <article class="plan-card student" :class="{ 'is-current': user?.plan === 'student' }">
         <header class="plan-head">
           <h3>Plan Estudiantil</h3>
           <p class="meta">Dispositivos: 2 · Historial: 90 días</p>
@@ -42,11 +48,17 @@
           <li>Alertas inteligentes (consumo inusual, luces encendidas)</li>
           <li>Agregar maximo 2 dispositivos</li>
         </ul>
-        <button class="btn btn-muted" disabled>Plan actual</button>
+        <button
+            v-if="user?.plan === 'student'"
+            class="btn btn-muted" disabled>Plan actual</button>
+        <button
+            v-else
+            class="btn btn-primary"
+            @click="changePlan('student')">Elegir Plan Estudiantil</button>
       </article>
 
       <!-- Plan Familiar -->
-      <article class="plan-card family">
+      <article class="plan-card family" :class="{ 'is-current': user?.plan === 'family' }">
         <header class="plan-head">
           <h3>Plan Familiar (Premium)</h3>
           <p class="meta">Dispositivos: ∞ · Historial: ∞</p>
@@ -57,8 +69,15 @@
           <li>Pronóstico de consumo y ahorro estimado</li>
           <li>Exportación de reportes en PDF y Excel</li>
         </ul>
-        <button class="btn btn-primary">Elegir Familiar (Premium)</button>
+        <button
+            v-if="user?.plan === 'family'"
+            class="btn btn-muted" disabled>Plan actual</button>
+        <button
+            v-else
+            class="btn btn-primary"
+            @click="changePlan('family')">Elegir Familiar (Premium)</button>
       </article>
+
     </div>
     <div v-else-if="selectedOption === 'Renovar plan'" class="plans-grid">
       <article class="plan-card student is-current">
@@ -179,7 +198,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+const user = ref(null)
+const loading = ref(true)
+const error = ref(null)
+
+// Id del usuario actual simulado
+const userId = 3
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`http://localhost:3001/users/${userId}`)
+    if (!res.ok) throw new Error('Error al obtener datos del usuario')
+    user.value = await res.json()
+  } catch (err) {
+    error.value = err.message
+  } finally {
+    loading.value = false
+  }
+})
+
+async function changePlan(newPlan) {
+  if (!user.value) return
+  try {
+    const res = await fetch(`http://localhost:3001/users/${user.value.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: newPlan })
+    })
+    if (!res.ok) throw new Error('No se pudo cambiar el plan')
+    user.value.plan = newPlan
+    alert(`Tu plan ahora es ${newPlan.toUpperCase()}`)
+  } catch (err) {
+    alert('Error: ' + err.message)
+  }
+}
 
 // Opciones de la barra superior
 const options = ['Cambiar plan', 'Renovar plan', 'Cancelar plan']

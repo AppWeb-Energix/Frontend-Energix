@@ -7,9 +7,10 @@
       <Router-link :to="{name:'usage'}" class="nav" active-class="active"><span>Consumo</span></Router-link>
       <Router-link :to="{name:'alerts'}" class="nav" active-class="active"><span>Alertas</span></Router-link>
       <Router-link :to="{name:'reports'}" class="nav" active-class="active"><span>Reportes</span></Router-link>
+      <Router-link :to="{name:'devices'}" class="nav" active-class="active"><span>Dispositivos</span></Router-link>
       <Router-link :to="{name:'subscriptions'}" class="nav" active-class="active"><span>Suscripciones</span></Router-link>
+      <Router-link :to="{name:'rewards'}" class="nav" active-class="active"><span>Recompensas</span></Router-link>
       <Router-link :to="{name:'configuration'}" class="nav" active-class="active"><span>Configuración</span></Router-link>
-      <Router-link :to="{ name: 'rewards' }" class="nav" active-class="active"><span>Recompensas</span></router-link>
 
       <button @click="handleLogout" class="logout-button">
         Cerrar Sesión
