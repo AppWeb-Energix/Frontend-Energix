@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '../utils/mockAuth.js'
+/*import { isAuthenticated } from '../utils/mockAuth.js'*/
+
+import { isAuthenticated } from '@/modules/auth/auth.service'
 
 // Eager load para rutas críticas de autenticación (mejor performance en First Contentful Paint)
 import Login from '../views/Login.vue'
@@ -16,7 +18,6 @@ const NotFound = () => import('../pages/notfound.vue')
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL || '/'),
     routes: [
-        // Redirigir raíz según estado de autenticación
         {
             path: '/',
             redirect: () => {
@@ -24,7 +25,6 @@ export const router = createRouter({
             }
         },
 
-        // Rutas públicas (autenticación)
         {
             path: '/login',
             name: 'login',
@@ -38,7 +38,6 @@ export const router = createRouter({
             meta: { title: 'Sign Up', public: true }
         },
 
-        // Rutas privadas (requieren autenticación)
         {
             path: '/dashboard',
             name: 'dashboard',
@@ -47,7 +46,7 @@ export const router = createRouter({
         },
         {
             path: '/profile',
-            redirect: '/dashboard' // Alias para compatibilidad
+            redirect: '/dashboard'
         },
         {
             path: '/usage',
@@ -68,13 +67,18 @@ export const router = createRouter({
             meta: { title: 'Reports', requiresAuth: true }
         },
         {
+            path: '/devices',
+            name: 'devices',
+            component: () => import('@/pages/devices.vue'),
+            meta: { title: 'Mis Dispositivos', requiresAuth: true }
+        },
+        {
             path: '/configuration',
             name: 'configuration',
             component: Configuration,
             meta: { title: 'Configuration', requiresAuth: true }
         },
 
-        // 404 - No encontrado
         {
             path: '/:pathMatch(.*)*',
             name: '404',
@@ -87,27 +91,22 @@ export const router = createRouter({
     }
 })
 
-// Navigation Guard - Protección de rutas
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.meta?.requiresAuth === true
     const isPublic = to.meta?.public === true
     const logged = isAuthenticated()
 
-    // 1. Proteger rutas privadas
     if (requiresAuth && !logged) {
         return next({ name: 'login' })
     }
 
-    // 2. Evitar que usuarios autenticados vean login/register
     if (isPublic && logged) {
         return next({ name: 'dashboard' })
     }
 
-    // 3. Permitir navegación normal
     next()
 })
 
-// Actualizar título de la pestaña
 router.afterEach((to) => {
     document.title = `Energix · ${to.meta?.title || 'App'}`
 })
