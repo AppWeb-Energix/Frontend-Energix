@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="topbar">
       <div class="greeting">
-        <h1>Bienvenido de vuelta, <strong>Jorge</strong>.</h1>
+        <h1>Bienvenido de vuelta, <strong>{{ userName }}</strong>.</h1>
       </div>
       <div class="top-meta">
         <div class="datetime">
@@ -14,8 +14,8 @@
         <div class="user">
           <img class="avatar" src="" alt="Foto de Jorge Ramírez" />
           <div class="user-meta">
-            <div class="name">Jorge Ramírez</div>
-            <div class="plan">Plan Estudiantil</div>
+            <div class="name">{{ userName }}</div>
+            <div class="plan">{{ userPlan }}</div>
           </div>
         </div>
       </div>
@@ -66,12 +66,13 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { DevicesApi, onDeviceChange } from '@/shared/infrastructure/endpoints/devices.endpoint.js'
 import { usePersonalizationStore } from '@/stores/personalization'
+import { useAuth } from '@/composables/useAuth'
 
 const personalization = usePersonalizationStore()
+const { userId, userName, userPlan, getCurrentUser } = useAuth()
 
 Chart.register(...registerables)
 
-const userId = 3
 const tarifa = 0.68
 let charts = { hora: null, semana: null, disp: null }
 
@@ -233,6 +234,7 @@ async function reloadAll() {
 }
 
 onMounted(async () => {
+  await getCurrentUser() // Inicializar usuario actual
   await reloadAll()
   onDeviceChange(async () => {
     await reloadAll()

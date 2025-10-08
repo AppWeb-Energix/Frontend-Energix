@@ -41,9 +41,16 @@ export const AuthApi = {
         return { user, token: 'dev-token' };
     },
 
-    async login({ email }) {
+    async login({ email, password }) {
         const list = await http.get(`${USERS}?email=${encodeURIComponent(email)}`);
         if (!list.length) throw { message: 'Usuario no encontrado. Regístrate primero.' };
-        return { user: list[0], token: 'dev-token' };
+
+        const user = list[0];
+        // ✅ Validar contraseña
+        if (user.password !== password) {
+            throw { message: 'Contraseña incorrecta.' };
+        }
+
+        return { user, token: 'dev-token' };
     }
 };
