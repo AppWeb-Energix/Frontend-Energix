@@ -1,0 +1,76 @@
+{
+  "users": [
+
+  ],
+  "codes": [
+    {
+      "id": 1,
+      "code": "STU-11111",
+      "kind": "plug",
+      "used": false
+    },
+    {
+      "id": 2,
+      "code": "STU-22222",
+      "kind": "plug",
+      "used": true
+    },
+    {
+      "id": 3,
+      "code": "STU-33333",
+      "kind": "plug",
+      "used": false
+    },
+    {
+      "id": 4,
+      "code": "STU-44444",
+      "kind": "plug",
+      "used": false
+    },
+    {
+      "id": 5,
+      "code": "STU-55555",
+      "kind": "plug",
+      "used": false
+    },
+    {
+      "id": 6,
+      "code": "FAM-11111",
+      "kind": "sensor",
+      "used": false
+    },
+    {
+      "id": 7,
+      "code": "FAM-22222",
+      "kind": "sensor",
+      "used": false
+    },
+    {
+      "id": 8,
+      "code": "FAM-33333",
+      "kind": "sensor",
+      "used": false
+    },
+    {
+      "id": 9,
+      "code": "FAM-44444",
+      "kind": "sensor",
+      "used": false
+    },
+    {
+      "id": 10,
+      "code": "FAM-55555",
+      "kind": "sensor",
+      "used": false
+    }
+  ],
+  "devices": [
+
+  ],
+  "zones": [
+
+  ],
+  "alerts": [
+
+  ]
+}
