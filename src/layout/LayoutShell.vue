@@ -31,6 +31,7 @@
 import { RouterLink, useRouter } from 'vue-router'
 import { logout } from '../utils/mockAuth.js'
 import { usePersonalizationStore } from '../stores/personalization.js'
+
 const router = useRouter()
 const personalizationStore = usePersonalizationStore()
 
