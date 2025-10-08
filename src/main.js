@@ -18,8 +18,12 @@ import * as feather from 'feather-icons'
 import './style.css'
 import './styles/tokens.css'
 import './styles/auth.css'
+import { createPinia } from 'pinia'
 
 const app = createApp(App)
+
+const pinia = createPinia()
+app.use(pinia)
 
 app.use(router)
 

@@ -4,17 +4,17 @@
 
     <!-- Viñetas de resumen -->
     <div v-if="hasDevices" class="summary-cards">
-      <div class="card">
+      <div v-if="personalization.kpiCurrent" class="card">
         <span class="emoji">💡</span>
         <p class="label">Consumo Total</p>
         <p class="value">{{ totalConsumo }} kWh</p>
       </div>
-      <div class="card">
+      <div v-if="personalization.kpiCost" class="card">
         <span class="emoji">💰</span>
         <p class="label">Costo Estimado</p>
         <p class="value">S/ {{ totalCosto.toFixed(2) }}</p>
       </div>
-      <div class="card">
+      <div v-if="personalization.kpiTariff" class="card">
         <span class="emoji">⚡</span>
         <p class="label">Tarifa Promedio</p>
         <p class="value">S/ {{ tarifa.toFixed(2) }}/kWh</p>
@@ -23,12 +23,12 @@
 
     <!-- Si tiene dispositivos -->
     <div v-if="hasDevices" class="charts">
-      <div class="chart">
+      <div v-if="personalization.chartDevice" class="chart">
         <h3>Consumo por Dispositivo (kWh)</h3>
         <canvas id="chartConsumoMensual"></canvas>
       </div>
 
-      <div class="chart">
+      <div v-if="personalization.chartCost" class="chart">
         <h3>Costos Estimados por Dispositivo (S/)</h3>
         <canvas id="chartCostosMensuales"></canvas>
       </div>
@@ -46,6 +46,9 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { DevicesApi, onDeviceChange } from '@/shared/infrastructure/endpoints/devices.endpoint.js'
+import { usePersonalizationStore } from '@/stores/personalization'
+
+const personalization = usePersonalizationStore()
 
 Chart.register(...registerables)
 
@@ -155,6 +158,8 @@ onMounted(async () => {
     console.log('📡 Cambio en dispositivos → recargando dashboard básico...')
     await reloadData()
   })
+
+  personalization.loadPersonalization()
 })
 
 onBeforeUnmount(() => {

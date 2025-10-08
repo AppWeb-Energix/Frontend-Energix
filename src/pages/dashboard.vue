@@ -24,7 +24,7 @@
       <section aria-labelledby="ov-title">
         <h2 id="ov-title" class="section-title">Overview</h2>
         <div class="kpi-group">
-          <article class="kpi">
+          <article v-if="personalization.kpiCurrent" class="kpi">
             <h3 class="kpi-title">Consumo actual</h3>
             <div class="kpi-value">{{ currentPowerKwh.toFixed(2) }} kWh</div>
             <div class="kpi-sub">+10% ahorrado vs ayer</div>
@@ -34,12 +34,12 @@
             <div class="kpi-value">{{ todayTotalKwh.toFixed(2) }} kWh</div>
             <div class="kpi-sub">Hasta ahora / {{ projectedTodayKwh.toFixed(2) }} kWh proyectado</div>
           </article>
-          <article class="kpi">
+          <article v-if="personalization.kpiMonthly" class="kpi">
             <h3 class="kpi-title">Consumo mensual</h3>
             <div class="kpi-value">{{ monthTotalKwh.toFixed(0) }} kWh</div>
             <div class="kpi-sub">-80% de una meta de 250 kWh</div>
           </article>
-          <article class="kpi">
+          <article v-if="personalization.kpiCost" class="kpi">
             <h3 class="kpi-title">Costo estimado</h3>
             <div class="kpi-value">S/{{ estimatedCost.toFixed(2) }}</div>
             <div class="kpi-sub">vs S/48 el mes pasado</div>
@@ -53,7 +53,7 @@
       </section>
 
       <section class="grid-12">
-        <figure class="card chart-box col-span-8">
+        <figure v-if="personalization.chartHourly" class="card chart-box col-span-8">
           <h3>Consumo de energía hoy (por hora)</h3>
           <select :value="selectedZoneIdHora" @change="onZoneChangeHora" style="margin-bottom: 1rem;">
             <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }}</option>
@@ -64,7 +64,7 @@
           <canvas id="consumoPorHora"></canvas>
         </figure>
 
-        <figure class="card chart-box col-span-4">
+        <figure v-if="personalization.chartDevice" class="card chart-box col-span-4">
           <h3>Consumo por dispositivo</h3>
           <select :value="selectedZoneIdDispositivo" @change="onZoneChangeDispositivo" style="margin-bottom: 1rem;">
             <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }}</option>
@@ -72,7 +72,7 @@
           <canvas id="consumoPorDispositivo"></canvas>
         </figure>
 
-        <figure class="card chart-box col-span-12">
+        <figure v-if="personalization.chartMonthly" class="card chart-box col-span-12">
           <h3>Consumo este mes (diario)</h3>
           <select :value="selectedZoneIdMes" @change="onZoneChangeMes" style="margin-bottom: 1rem;">
             <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }}</option>
@@ -87,7 +87,14 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { Chart, registerables } from 'chart.js'
-import { http } from '@/shared/infrastructure/base-api'  // ← usamos tu http
+import { http } from '@/shared/infrastructure/base-api'
+import { usePersonalizationStore } from '@/stores/personalization'
+
+const personalization = usePersonalizationStore()
+
+onMounted(() => {
+  personalization.loadPersonalization()
+})
 
 Chart.register(...registerables)
 

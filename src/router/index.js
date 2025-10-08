@@ -33,17 +33,11 @@ const DashboardFamily = () => import('../pages/dashboard.vue')
 const DashboardStudent = () => import('../pages/dashboard-student.vue')
 const DashboardBasic = () => import('../pages/dashboard-basic.vue')
 
-const Usage = () => import('../pages/usage.vue')
 const Alerts = () => import('../pages/alerts.vue')
-const Reports = () => import('../pages/reports.vue')
+const ConfigurationBasic = () => import('../pages/configuration-basic.vue')
 const Configuration = () => import('../pages/configuration.vue')
 const NotFound = () => import('../pages/notfound.vue')
 const Subscriptions = () => import('../pages/subscriptions.vue')
-
-
-// Eager load para rutas críticas de autenticación
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
 
 // Eager load para rutas críticas de autenticación
 import Login from '../views/Login.vue'
@@ -123,22 +117,10 @@ export const router = createRouter({
             redirect: '/dashboard'
         },
         {
-            path: '/usage',
-            name: 'usage',
-            component: Usage,
-            meta: { title: 'Usage', requiresAuth: true }
-        },
-        {
             path: '/alerts',
             name: 'alerts',
             component: Alerts,
             meta: { title: 'Alerts', requiresAuth: true }
-        },
-        {
-            path: '/reports',
-            name: 'reports',
-            component: Reports,
-            meta: { title: 'Reports', requiresAuth: true }
         },
         {
             path: '/devices',
@@ -146,11 +128,30 @@ export const router = createRouter({
             component: () => import('@/pages/devices.vue'),
             meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
+        // Redirección dinámica para configuración según el plan
         {
             path: '/configuration',
-            name: 'configuration',
-            component: Configuration,
+            redirect: () => {
+                const plan = (localStorage.getItem('energix-plan') || 'basic').toLowerCase();
+                if (plan === 'basic') {
+                    return { name: 'configuration-basic' };
+                } else {
+                    return { name: 'configuration-advanced' };
+                }
+            },
             meta: { title: 'Configuration', requiresAuth: true }
+        },
+        {
+            path: '/configuration/basic',
+            name: 'configuration-basic',
+            component: ConfigurationBasic,
+            meta: { title: 'Configuración Básica', requiresAuth: true }
+        },
+        {
+            path: '/configuration/advanced',
+            name: 'configuration-advanced',
+            component: Configuration,
+            meta: { title: 'Configuración Avanzada', requiresAuth: true }
         },
 
         {

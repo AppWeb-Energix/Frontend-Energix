@@ -36,21 +36,21 @@
 
       <!-- Charts -->
       <section class="grid-12">
-        <figure class="card chart-box col-span-8">
+        <figure v-if="personalization.chartHourly" class="card chart-box col-span-8">
           <h3>📈 Consumo de energía hoy (por hora)</h3>
           <div class="chart-container">
             <canvas id="chartPorHora"></canvas>
           </div>
         </figure>
 
-        <figure class="card chart-box col-span-4">
+        <figure v-if="personalization.chartDevice" class="card chart-box col-span-4">
           <h3>⚡ Consumo por dispositivo</h3>
           <div class="chart-container small">
             <canvas id="chartPorDispositivo"></canvas>
           </div>
         </figure>
 
-        <figure class="card chart-box col-span-12">
+        <figure v-if="personalization.chartWeekly" class="card chart-box col-span-12">
           <h3>📊 Consumo esta semana (diario)</h3>
           <div class="chart-container">
             <canvas id="chartPorSemana"></canvas>
@@ -65,6 +65,9 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { DevicesApi, onDeviceChange } from '@/shared/infrastructure/endpoints/devices.endpoint.js'
+import { usePersonalizationStore } from '@/stores/personalization'
+
+const personalization = usePersonalizationStore()
 
 Chart.register(...registerables)
 
@@ -234,6 +237,7 @@ onMounted(async () => {
   onDeviceChange(async () => {
     await reloadAll()
   })
+  personalization.loadPersonalization()
 })
 
 onBeforeUnmount(() => Object.values(charts).forEach(ch => ch?.destroy()))
