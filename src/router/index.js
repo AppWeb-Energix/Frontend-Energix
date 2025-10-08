@@ -38,6 +38,14 @@ export const router = createRouter({
             component: Login,
             meta: { title: 'Sign In', public: true }
         },
+
+        {
+            path: '/recompensas',
+            name: 'rewards',
+            component: () => import('../pages/rewards.vue'),
+            meta: { title: 'Recompensas' }
+        },
+
         {
             path: '/register',
             name: 'register',
