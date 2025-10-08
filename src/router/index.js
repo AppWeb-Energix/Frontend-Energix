@@ -12,11 +12,18 @@ const Alerts = () => import('../pages/alerts.vue')
 const Reports = () => import('../pages/reports.vue')
 const Configuration = () => import('../pages/configuration.vue')
 const NotFound = () => import('../pages/notfound.vue')
+const Subscriptions = () => import('../pages/subscriptions.vue')
+
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL || '/'),
     routes: [
         // Redirigir raíz según estado de autenticación
+        {
+            path: '/subscriptions',
+            name: 'subscriptions',
+            component: Subscriptions,
+            meta: { title: 'Suscripciones' } },
         {
             path: '/',
             redirect: () => {
