@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "name": "Estudiante",
+      "name": "Angelitoso",
       "lastName": "Prueba",
       "email": "studen@test.com",
       "password": "12345678",
@@ -11,7 +11,7 @@
       "id": 1
     },
     {
-      "name": "Basico",
+      "name": "Angel",
       "lastName": "dasdsad",
       "email": "test@ejemplo.com",
       "password": "12345678",
@@ -21,10 +21,10 @@
       "id": 2
     },
     {
-      "name": "Familia",
+      "name": "Angelicoque",
       "lastName": "1",
       "email": "fam@test.com",
-      "password": "87654321",
+      "password": "12345678",
       "dni": "12345678",
       "district": "Net",
       "plan": "family",
@@ -671,6 +671,216 @@
       "timestamp": "2025-10-08T22:57:44.886Z",
       "isRead": false,
       "id": 47
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T01:25:03.347Z",
+      "isRead": false,
+      "id": 48
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T01:25:53.242Z",
+      "isRead": false,
+      "id": 49
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T03:37:05.206Z",
+      "isRead": false,
+      "id": 50
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T03:41:58.302Z",
+      "isRead": false,
+      "id": 51
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T03:57:31.902Z",
+      "isRead": false,
+      "id": 52
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T03:59:04.951Z",
+      "isRead": false,
+      "id": 53
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T03:59:10.649Z",
+      "isRead": false,
+      "id": 54
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T04:00:20.782Z",
+      "isRead": false,
+      "id": 55
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:00:58.365Z",
+      "isRead": false,
+      "id": 56
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:16:30.241Z",
+      "isRead": false,
+      "id": 57
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:29:51.583Z",
+      "isRead": false,
+      "id": 58
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:31:16.837Z",
+      "isRead": false,
+      "id": 59
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:32:55.869Z",
+      "isRead": false,
+      "id": 60
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T04:33:49.363Z",
+      "isRead": false,
+      "id": 61
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T05:43:26.852Z",
+      "isRead": false,
+      "id": 62
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T05:44:35.819Z",
+      "isRead": false,
+      "id": 63
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Familia!",
+      "timestamp": "2025-10-13T22:32:14.715Z",
+      "isRead": false,
+      "id": 64
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Estudiante!",
+      "timestamp": "2025-10-13T22:32:20.098Z",
+      "isRead": false,
+      "id": 65
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Basico!",
+      "timestamp": "2025-10-13T22:33:42.443Z",
+      "isRead": false,
+      "id": 66
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelicoque!",
+      "timestamp": "2025-10-13T22:50:08.690Z",
+      "isRead": false,
+      "id": 67
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-10-13T22:50:30.081Z",
+      "isRead": false,
+      "id": 68
     }
   ]
 }

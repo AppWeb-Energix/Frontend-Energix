@@ -1,25 +1,7 @@
 <template>
   <div class="content">
     <header class="topbar">
-      <div class="greeting">
-        <h1>Bienvenido de vuelta, <strong>{{ userName }}</strong>.</h1>
-      </div>
-      <div class="top-meta">
-        <div class="datetime">
-          <div>Jueves 25 - Set</div>
-          <div>11:00 am</div>
-        </div>
-        <button class="icon-btn" aria-label="Notificaciones"></button>
-        <div class="user">
-          <img class="avatar" src="" alt="Foto de Jorge Ramírez" />
-          <div class="user-meta">
-            <div class="name">{{ userName }}</div>
-            <div class="plan">{{ userPlan }}</div>
-          </div>
-        </div>
-      </div>
     </header>
-
     <main class="main">
       <section aria-labelledby="ov-title">
         <h2 id="ov-title" class="section-title">Overview</h2>
