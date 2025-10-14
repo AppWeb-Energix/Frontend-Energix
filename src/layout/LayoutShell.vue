@@ -1,55 +1,137 @@
 <template>
-
   <aside class="sidebar">
-    <div class="brand">Energix</div>
-    <nav class="sidenav">
-      <Router-link :to="{name:'dashboard'}" class="nav" active-class="active"><span>Dashboard</span></Router-link>
-      <!-- Eliminado enlace a Consumo (usage) -->
-      <!-- <Router-link :to="{name:'usage'}" class="nav" active-class="active"><span>Consumo</span></Router-link> -->
-      <Router-link :to="{name:'alerts'}" class="nav" active-class="active"><span>Alertas</span></Router-link>
-      <!-- Eliminado enlace a Reportes (reports) -->
-      <!-- <Router-link :to="{name:'reports'}" class="nav" active-class="active"><span>Reportes</span></Router-link> -->
-      <Router-link :to="{name:'devices'}" class="nav" active-class="active"><span>Mis Dispositivos</span></Router-link>
-      <Router-link :to="{name:'subscriptions'}" class="nav" active-class="active"><span>Suscripciones</span></Router-link>
-      <Router-link :to="{name:'rewards'}" class="nav" active-class="active"><span>Recompensas</span></Router-link>
-      <Router-link to="/configuration" class="nav" active-class="active"><span>Configuración</span></Router-link>
-
-      <button @click="handleLogout" class="logout-button">
-        Cerrar Sesión
-      </button>
-    </nav>
+    <div class="container-logo">
+      <img src="@/assets/logo.png" alt="logo" class="logo-img" />
+    </div>
+    <Menu :model="items" :pt="menuPt" class="p-menu-custom" />
+    <Button
+      label="Cerrar sesión"
+      icon="pi pi-sign-out"
+      class="logout-btn"
+      @click="handleLogout"
+      outlined
+      severity="danger"
+    />
   </aside>
-    <div class="content">
-      <header class="topbar"></header>
+  <div class="content">
+    <header class="topbar">
+      <div class="header-left">
+        <span> {{ day }} · <b>{{ date }} de {{ month }}</b> · {{hour}}</span>
+      </div>
+      <div class="header-right">
+        <span>Hola, <b>{{userName}} </b></span>
+        <avatar icon="pi pi-user" class="ml-2" size="large" style="background-color: #dee9fc; color: #1a2551" shape="circle"  />
+      </div>
+    </header>
     <main class="main">
       <slot />
     </main>
-    </div>
-
+  </div>
 </template>
+
 <script setup>
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
+import Menu from 'primevue/menu'
+import Button from 'primevue/button'
+import Avatar from 'primevue/avatar'
 import { logout } from '../utils/mockAuth.js'
 import { usePersonalizationStore } from '../stores/personalization.js'
+import { useAuth } from '@/composables/useAuth'
+import {useDateTime} from "@/composables/useDateTime.js";
 
 const router = useRouter()
 const personalizationStore = usePersonalizationStore()
+const { userId, userName, userPlan, getCurrentUser } = useAuth()
+const { day, date, month, hour } = useDateTime();
+
 
 function handleLogout() {
-  personalizationStore.resetPersonalization() // Limpia la personalización en memoria
-  logout() // Borra localStorage
+  personalizationStore.resetPersonalization()
+  logout()
   router.push({ name: 'login' })
 }
+
+const items = [
+  { label: 'Dashboard', icon: 'pi pi-objects-column', command: () => router.push({ name: 'dashboard' }) },
+  { label: 'Alertas', icon: 'pi pi-bell', command: () => router.push({ name: 'alerts' }) },
+  { label: 'Mis Dispositivos', icon: 'pi pi-clipboard', command: () => router.push({ name: 'devices' }) },
+  { label: 'Suscripciones', icon: 'pi pi-credit-card', command: () => router.push({ name: 'subscriptions' }) },
+  { label: 'Recompensas', icon: 'pi pi-gift', command: () => router.push({ name: 'rewards' }) },
+  { label: 'Configuración', icon: 'pi pi-cog', command: () => router.push('/configuration') }
+]
+
+const menuPt = {
+  root: { class: 'my-menu-root' },
+  list: { class: 'my-menu-list' },
+
+}
+
 </script>
 
 <style scoped>
-.logout-button {
+.sidebar {
+  width: 15rem;
+  background: #fff;
+  min-height: 100vh;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+  font-weight: 500;
+}
+.container-logo{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.8em;
+}
+.logo-img{
+  max-height: 5em;
+  max-width: 5em;
+  display: block;
+}
+
+:deep(.p-menu-item-icon) {
+  color: #000 !important;
+}
+
+:deep(.my-menu-root) { border: none; }
+:deep(.my-menu-list) { gap: 1em !important; }
+:deep(.p-menu-custom .p-menu-item:not(.p-disabled) .p-menu-item-content:hover) {
+  background: #002349;
+  color: #ffffff;
+}
+:deep(.p-menu-custom .p-menu-item:not(.p-disabled) .p-menu-item-content:hover .p-menu-item-icon),
+:deep(.p-menu-custom .p-menu-item:not(.p-disabled) .p-menu-item-content:hover a) {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+.logout-btn {
   margin-top: auto;
-  padding: 12px;
-  background: #d32f2f;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  border: none !important;
+}
+.logout-btn:hover {
+  background: none !important;
+  box-shadow: none !important;
+  text-decoration: underline;
+}
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 56px;
+  background: #f5f5f5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.header-left{
+  margin-left: 1.5rem;
+}
+.main {
+  flex: 1;
+  padding: 2rem;
+  background: #fafbfc;
 }
 </style>
