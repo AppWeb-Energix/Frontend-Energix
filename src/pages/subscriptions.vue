@@ -1,6 +1,6 @@
 <template>
   <div class="plans-wrap">
-    <h2 class="title">Suscripciones</h2>
+    <h2 class="title">{{ t('subscriptions.title') }}</h2>
     <div class="options-bar">
       <button
           v-for="option in options"
@@ -8,155 +8,155 @@
           :class="{ active: selectedOption === option }"
           @click="selectedOption = option"
       >
-        {{ option }}
+        {{ t(`subscriptions.options.${option}`) }}
       </button>
     </div>
-    <p class="subtitle">Aumentar el límite de tus dispositivos</p>
-    <p class="description">Elige un plan. Los límites de dispositivos e historial cambian de inmediato en la app.</p>
+    <p class="subtitle">{{ t('subscriptions.subtitle') }}</p>
+    <p class="description">{{ t('subscriptions.description') }}</p>
 
-    <div v-if="selectedOption === 'Cambiar plan'" class="plans-grid">
+    <div v-if="selectedOption === 'change'" class="plans-grid">
       <!-- Plan Básico -->
       <article class="plan-card basic" :class="{ 'is-current': user?.plan === 'basic' }">
         <header class="plan-head">
-          <h3>Plan Básico</h3>
-          <p class="meta">Dispositivos: 1 · Historial: 7 días</p>
+          <h3>{{ t('subscriptions.plans.basic.name') }}</h3>
+          <p class="meta">{{ t('subscriptions.plans.basic.meta') }}</p>
         </header>
         <ul class="bullets">
-          <li>Historial de consumo (últimos 7 días)</li>
-          <li>Alertas básicas (límite mensual)</li>
-          <li>Agrega dispositivos manualmente</li>
+          <li>{{ t('subscriptions.plans.basic.features.history') }}</li>
+          <li>{{ t('subscriptions.plans.basic.features.alerts') }}</li>
+          <li>{{ t('subscriptions.plans.basic.features.manual') }}</li>
         </ul>
         <button
             v-if="user?.plan === 'basic'"
-            class="btn btn-muted" disabled>Plan actual</button>
+            class="btn btn-muted" disabled>{{ t('subscriptions.buttons.current') }}</button>
         <button
             v-else
             class="btn btn-primary"
-            @click="changePlan('basic')">Elegir Plan Básico</button>
+            @click="changePlan('basic')">{{ t('subscriptions.buttons.choose', { plan: t('subscriptions.plans.basic.name') }) }}</button>
       </article>
 
       <!-- Plan Estudiantil (actual) -->
       <article class="plan-card student" :class="{ 'is-current': user?.plan === 'student' }">
         <header class="plan-head">
-          <h3>Plan Estudiantil</h3>
-          <p class="meta">Dispositivos: 2 · Historial: 90 días</p>
+          <h3>{{ t('subscriptions.plans.student.name') }}</h3>
+          <p class="meta">{{ t('subscriptions.plans.student.meta') }}</p>
         </header>
         <ul class="bullets">
-          <li>Todo lo del Plan Básico</li>
-          <li>Historial ampliado (últimos 3 meses)</li>
-          <li>Recomendaciones personalizadas</li>
-          <li>Alertas inteligentes (consumo inusual, luces encendidas)</li>
-          <li>Agregar maximo 2 dispositivos</li>
+          <li>{{ t('subscriptions.plans.student.features.basic') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.extendedHistory') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.recommendations') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.smartAlerts') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.deviceLimit') }}</li>
         </ul>
         <button
             v-if="user?.plan === 'student'"
-            class="btn btn-muted" disabled>Plan actual</button>
+            class="btn btn-muted" disabled>{{ t('subscriptions.buttons.current') }}</button>
         <button
             v-else
             class="btn btn-primary"
-            @click="changePlan('student')">Elegir Plan Estudiantil</button>
+            @click="changePlan('student')">{{ t('subscriptions.buttons.choose', { plan: t('subscriptions.plans.student.name') }) }}</button>
       </article>
 
       <!-- Plan Familiar -->
       <article class="plan-card family" :class="{ 'is-current': user?.plan === 'family' }">
         <header class="plan-head">
-          <h3>Plan Familiar (Premium)</h3>
-          <p class="meta">Dispositivos: ∞ · Historial: ∞</p>
+          <h3>{{ t('subscriptions.plans.family.name') }}</h3>
+          <p class="meta">{{ t('subscriptions.plans.family.meta') }}</p>
         </header>
         <ul class="bullets">
-          <li>Todo lo del Plan Estudiantil</li>
-          <li>Historial completo sin límites</li>
-          <li>Pronóstico de consumo y ahorro estimado</li>
-          <li>Exportación de reportes en PDF y Excel</li>
+          <li>{{ t('subscriptions.plans.family.features.student') }}</li>
+          <li>{{ t('subscriptions.plans.family.features.unlimitedHistory') }}</li>
+          <li>{{ t('subscriptions.plans.family.features.forecast') }}</li>
+          <li>{{ t('subscriptions.plans.family.features.export') }}</li>
         </ul>
         <button
             v-if="user?.plan === 'family'"
-            class="btn btn-muted" disabled>Plan actual</button>
+            class="btn btn-muted" disabled>{{ t('subscriptions.buttons.current') }}</button>
         <button
             v-else
             class="btn btn-primary"
-            @click="changePlan('family')">Elegir Familiar (Premium)</button>
+            @click="changePlan('family')">{{ t('subscriptions.buttons.choose', { plan: t('subscriptions.plans.family.name') }) }}</button>
       </article>
 
     </div>
-    <div v-else-if="selectedOption === 'Renovar plan'" class="plans-grid">
+    <div v-else-if="selectedOption === 'renew'" class="plans-grid">
       <article class="plan-card student is-current">
         <header class="plan-head">
-          <h3>Plan Estudiantil</h3>
-          <p class="meta">Dispositivos: 2 · Historial: 90 días</p>
+          <h3>{{ t('subscriptions.plans.student.name') }}</h3>
+          <p class="meta">{{ t('subscriptions.plans.student.meta') }}</p>
         </header>
         <ul class="bullets">
-          <li>Todo lo del Plan Básico</li>
-          <li>Historial ampliado (últimos 3 meses)</li>
-          <li>Recomendaciones personalizadas</li>
-          <li>Alertas inteligentes (consumo inusual, luces encendidas)</li>
+          <li>{{ t('subscriptions.plans.student.features.basic') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.extendedHistory') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.recommendations') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.smartAlerts') }}</li>
         </ul>
-        <button class="btn btn-primary">Renovar</button>
+        <button class="btn btn-primary">{{ t('subscriptions.buttons.renew') }}</button>
       </article>
     </div>
 
-    <div v-else-if="selectedOption === 'Cancelar plan'" class="plans-grid">
+    <div v-else-if="selectedOption === 'cancel'" class="plans-grid">
       <article class="plan-card student is-current">
         <header class="plan-head">
-          <h3>Plan Estudiantil</h3>
-          <p class="meta">Dispositivos: 2 · Historial: 90 días</p>
+          <h3>{{ t('subscriptions.plans.student.name') }}</h3>
+          <p class="meta">{{ t('subscriptions.plans.student.meta') }}</p>
         </header>
         <ul class="bullets">
-          <li>Todo lo del Plan Básico</li>
-          <li>Historial ampliado (últimos 3 meses)</li>
-          <li>Recomendaciones personalizadas</li>
-          <li>Alertas inteligentes (consumo inusual, luces encendidas)</li>
+          <li>{{ t('subscriptions.plans.student.features.basic') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.extendedHistory') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.recommendations') }}</li>
+          <li>{{ t('subscriptions.plans.student.features.smartAlerts') }}</li>
         </ul>
-        <button class="btn btn-primary">Cancelar</button>
+        <button class="btn btn-primary">{{ t('subscriptions.buttons.cancel') }}</button>
       </article>
     </div>
     <!-- Divider -->
     <hr class="divider" />
 
     <section class="billing-wrap">
-      <h3 class="billing-title">Método de pago</h3>
-      <p class="billing-subtitle">Añade una tarjeta para activar y renovar tu plan.</p>
+      <h3 class="billing-title">{{ t('subscriptions.billing.title') }}</h3>
+      <p class="billing-subtitle">{{ t('subscriptions.billing.subtitle') }}</p>
 
       <form class="card-form" @submit.prevent="saveCard">
         <div class="row">
           <label>
-            Titular de la tarjeta
-            <input v-model.trim="cardholder" type="text" placeholder="Nombre como aparece en la tarjeta" />
+            {{ t('subscriptions.billing.cardholder') }}
+            <input v-model.trim="cardholder" type="text" :placeholder="t('subscriptions.billing.cardholderPlaceholder')" />
           </label>
         </div>
 
         <div class="row two">
           <label>
-            Número de tarjeta
+            {{ t('subscriptions.billing.cardNumber') }}
             <input
                 v-model="cardnumber"
                 @input="formatCardNumber"
                 inputmode="numeric"
                 autocomplete="cc-number"
-                placeholder="1234 5678 9012 3456"
+                :placeholder="t('subscriptions.billing.cardNumberPlaceholder')"
             />
           </label>
 
           <label>
-            Vencimiento (MM/AA)
+            {{ t('subscriptions.billing.expiry') }}
             <input
                 v-model="expiry"
                 @input="formatExpiry"
                 inputmode="numeric"
                 autocomplete="cc-exp"
-                placeholder="MM/AA"
+                :placeholder="t('subscriptions.billing.expiryPlaceholder')"
                 maxlength="5"
             />
           </label>
 
           <label>
-            CVV
+            {{ t('subscriptions.billing.cvv') }}
             <input
                 v-model="cvv"
                 @input="onlyDigits('cvv', 4)"
                 inputmode="numeric"
                 autocomplete="cc-csc"
-                placeholder="3 o 4 dígitos"
+                :placeholder="t('subscriptions.billing.cvvPlaceholder')"
                 maxlength="4"
             />
           </label>
@@ -164,11 +164,11 @@
 
         <label class="chk">
           <input type="checkbox" v-model="asDefault" />
-          Guardar como método predeterminado
+          {{ t('subscriptions.billing.saveAsDefault') }}
         </label>
 
         <div class="actions">
-          <button class="btn btn-primary" type="submit">Guardar tarjeta</button>
+          <button class="btn btn-primary" type="submit">{{ t('subscriptions.billing.saveButton') }}</button>
           <span v-if="saveMsg" class="success">{{ saveMsg }}</span>
           <span v-if="errorMsg" class="error">{{ errorMsg }}</span>
         </div>
@@ -179,18 +179,18 @@
   <hr class="divider" />
   <!-- TARJETAS GUARDADAS -->
   <section class="saved-cards-wrap">
-    <h3 class="billing-title">Tarjetas guardadas</h3>
-    <p class="billing-subtitle" v-if="!savedCards.length">Aún no tienes tarjetas guardadas.</p>
+    <h3 class="billing-title">{{ t('subscriptions.billing.savedCards') }}</h3>
+    <p class="billing-subtitle" v-if="!savedCards.length">{{ t('subscriptions.billing.noCards') }}</p>
 
     <ul class="saved-list" v-else>
       <li v-for="c in savedCards" :key="c.id" class="saved-item">
         <div class="left">
           <div class="brand">{{ c.brand }}</div>
           <div class="meta">•••• •••• •••• {{ c.last4 }} · {{ c.exp }}</div>
-          <span v-if="c.default" class="badge-default">Predeterminada</span>
+          <span v-if="c.default" class="badge-default">{{ t('subscriptions.billing.default') }}</span>
         </div>
         <div class="right">
-          <button class="btn btn-danger" @click="removeCard(c.id)">Eliminar</button>
+          <button class="btn btn-danger" @click="removeCard(c.id)">{{ t('subscriptions.billing.remove') }}</button>
         </div>
       </li>
     </ul>
@@ -199,6 +199,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const user = ref(null)
 const loading = ref(true)
@@ -227,17 +230,17 @@ async function changePlan(newPlan) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: newPlan })
     })
-    if (!res.ok) throw new Error('No se pudo cambiar el plan')
+    if (!res.ok) throw new Error(t('subscriptions.messages.errors.changePlan'))
     user.value.plan = newPlan
-    alert(`Tu plan ahora es ${newPlan.toUpperCase()}`)
+    alert(t('subscriptions.messages.planChanged', { plan: newPlan.toUpperCase() }))
   } catch (err) {
     alert('Error: ' + err.message)
   }
 }
 
 // Opciones de la barra superior
-const options = ['Cambiar plan', 'Renovar plan', 'Cancelar plan']
-const selectedOption = ref('Cambiar plan')
+const options = ['change', 'renew', 'cancel']
+const selectedOption = ref('change')
 
 // --------- Estado tarjeta ----------
 const cardholder = ref('')
@@ -292,15 +295,15 @@ function saveCard() {
   saveMsg.value = ''
   errorMsg.value = ''
 
-  if (!cardholder.value.trim()) { errorMsg.value = 'Ingresa el titular de la tarjeta.'; return }
-  if (!luhnValid(cardnumber.value)) { errorMsg.value = 'Número de tarjeta inválido.'; return }
-  if (!expiryValid(expiry.value)) { errorMsg.value = 'Vencimiento inválido.'; return }
-  if (!/^\d{3,4}$/.test(cvv.value)) { errorMsg.value = 'CVV inválido.'; return }
+  if (!cardholder.value.trim()) { errorMsg.value = t('subscriptions.messages.errors.cardholderRequired'); return }
+  if (!luhnValid(cardnumber.value)) { errorMsg.value = t('subscriptions.messages.errors.invalidCard'); return }
+  if (!expiryValid(expiry.value)) { errorMsg.value = t('subscriptions.messages.errors.invalidExpiry'); return }
+  if (!/^\d{3,4}$/.test(cvv.value)) { errorMsg.value = t('subscriptions.messages.errors.invalidCvv'); return }
 
   // Aquí llamarías a tu backend: POST /billing/payment-methods
   // fetch('/api/payment-methods', { method:'POST', body: JSON.stringify({...}) })
 
-  saveMsg.value = 'Tarjeta guardada correctamente.'
+  saveMsg.value = t('subscriptions.messages.cardSaved')
 }
 
 // Lista mock de tarjetas (cámbialo cuando conectes tu backend)
@@ -310,10 +313,9 @@ const savedCards = ref([
 ])
 
 function removeCard(id) {
-  if (!confirm('¿Eliminar esta tarjeta?')) return
+  if (!confirm(t('subscriptions.billing.confirmRemove'))) return
   const idx = savedCards.value.findIndex(c => c.id === id)
   if (idx !== -1) savedCards.value.splice(idx, 1)
-
 
 }
 

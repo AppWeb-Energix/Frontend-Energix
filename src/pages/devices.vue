@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 
@@ -21,6 +22,7 @@ import { DevicesApi } from '@/shared/infrastructure/endpoints/devices.endpoint'
 import { AlertsApi } from '@/shared/infrastructure/endpoints/alerts.endpoint'
 import { getCurrentUser, getPlan } from '@/modules/auth/plan.util'
 
+const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -41,27 +43,26 @@ const limitByPlan = computed(() => {
   if (plan.value === 'family')  return Infinity
   return 2
 })
-const canAdd = computed(() => devices.value.length < limitByPlan.value)
+const canAdd = computed(() => devices.value.filter(d => d.type === deviceTypeByPlan.value).length < limitByPlan.value)
 
 // ===== ui =====
-const search   = ref('')
+const search = ref('')
 const selected = ref(null)
-const newName  = ref('')
+const newName = ref('')
 
 // ===== modal manual (básico) =====
-const deviceCatalog = [
-  { label: 'Refrigeradora', value: 'refrigerator' },
-  { label: 'Lavadora',      value: 'washer' },
-  { label: 'Televisor',     value: 'tv' },
-  { label: 'Computadora',   value: 'pc' },
-  { label: 'Iluminación',   value: 'lights' },
-  { label: 'Otro',          value: 'other' },
-]
+const deviceCatalog = computed(() => [
+  { label: t('devices.catalog.refrigerator'), value: 'refrigerator' },
+  { label: t('devices.catalog.washer'), value: 'washer' },
+  { label: t('devices.catalog.tv'), value: 'tv' },
+  { label: t('devices.catalog.pc'), value: 'pc' },
+  { label: t('devices.catalog.other'), value: 'other' },
+])
 const showManualDialog = ref(false)
 const manualForm = ref({ deviceKind:null, metrics:{ monthly:'', estimatedCost:'', tariff:'' } })
 const autoManualName = computed(() => {
   const n = devices.value.filter(d => d.type === 'manual').length + 1
-  return `Dispositivo ${n}`
+  return `${t('devices.manual.device')} ${n}`
 })
 
 // ===== zonas (solo familiar) =====
@@ -78,24 +79,24 @@ async function addZone(){
   zones.value.push(z)
   newZoneName.value = ''
   await AlertsApi.generateSystemAlert(user.value.id, 'zone_created', { zoneName: z.name })
-  toast.add({ severity:'success', summary:'Zona creada', life:1200 })
+  toast.add({ severity:'success', summary: t('devices.zones.created'), life:1200 })
 }
 async function renameZone(z){
-  const name = prompt('Nuevo nombre de la zona', z.name)
+  const name = prompt(t('devices.zones.rename'), z.name)
   if (!name || name.trim() === z.name) return
   const patched = await DevicesApi.renameZone(z.id, name.trim())
   z.name = patched.name
   await AlertsApi.generateSystemAlert(user.value.id, 'zone_renamed', { zoneName: z.name })
-  toast.add({ severity:'success', summary:'Zona actualizada', life:1200 })
+  toast.add({ severity:'success', summary: t('devices.zones.updated'), life:1200 })
 }
 async function removeZone(z){
   confirm.require({
-    header:'Confirmación',
-    message:`¿Eliminar zona "${z.name}"?`,
+    header: t('common.confirmation'),
+    message: t('devices.zones.delete', { name: z.name }),
     icon:'pi pi-exclamation-triangle',
     acceptClass:'p-button-danger',
-    acceptLabel:'Eliminar',
-    rejectLabel:'Cancelar',
+    acceptLabel: t('common.delete'),
+    rejectLabel: t('common.cancel'),
     accept: async () => {
       // quitar la zona a devices asignados
       const affected = devices.value.filter(d => d.zoneId === z.id)
@@ -105,7 +106,7 @@ async function removeZone(z){
       await DevicesApi.deleteZone(z.id)
       zones.value = zones.value.filter(x => x.id !== z.id)
       await AlertsApi.generateSystemAlert(user.value.id, 'zone_deleted', { zoneName: z.name })
-      toast.add({ severity:'success', summary:'Zona eliminada', life:1200 })
+      toast.add({ severity:'success', summary: t('devices.zones.deleted'), life:1200 })
     }
   })
 }
@@ -114,15 +115,16 @@ async function updateDeviceZone(row){
   const z = zones.value.find(x => x.id === row.zoneId)
   await AlertsApi.generateSystemAlert(user.value.id, 'device_zoned', {
     deviceName: row.name,
-    zoneName: z?.name || 'Sin zona'
+    zoneName: z?.name || t('devices.noZone')
   })
-  toast.add({ severity:'success', summary:'Zona asignada', life:1200 })
+  toast.add({ severity:'success', summary: t('devices.zones.assigned'), life:1200 })
 }
 
 // ===== badge plan =====
 const planBadge = computed(() => {
-  const name = plan.value === 'student' ? 'Plan Estudiantil'
-      : plan.value === 'family' ? 'Plan Familiar' : 'Plan Básico'
+  const name = plan.value === 'student' ? t('devices.plans.student')
+      : plan.value === 'family' ? t('devices.plans.family')
+      : t('devices.plans.basic')
   const cap  = limitByPlan.value === Infinity ? '∞' : `${devices.value.length}/${limitByPlan.value}`
   return `${name} · ${cap}`
 })
@@ -147,14 +149,14 @@ const tableData = computed(() =>
 
 // ===== acciones =====
 async function addDevice(){
-  if (!canAdd.value) return toast.add({ severity:'warn', summary:'Límite alcanzado', life:1500 })
+  if (!canAdd.value) return toast.add({ severity:'warn', summary: t('devices.limitReached'), life:1500 })
 
   if (plan.value === 'student' || plan.value === 'family'){
     const index = devices.value.filter(d => d.type === deviceTypeByPlan.value).length + 1
-    const created = await DevicesApi.create(user.value.id, { name:`Dispositivo ${index}`, type:deviceTypeByPlan.value, status:'off', online:false })
+    const created = await DevicesApi.create(user.value.id, { name:`${t('devices.addDevice')} ${index}`, type:deviceTypeByPlan.value, status:'off', online:false })
     devices.value.push(created)
     await AlertsApi.generateSystemAlert(user.value.id, 'new_device', { deviceType: deviceTypeByPlan.value })
-    toast.add({ severity:'success', summary:'Dispositivo agregado', life:1400 })
+    toast.add({ severity:'success', summary: t('devices.messages.added'), life:1400 })
     return
   }
 
@@ -166,9 +168,9 @@ async function addDevice(){
 async function createManualDevice(){
   const m = manualForm.value.metrics
   if (!manualForm.value.deviceKind)
-    return toast.add({ severity:'warn', summary:'Selecciona el tipo de dispositivo', life:1500 })
+    return toast.add({ severity:'warn', summary: t('devices.manual.selectType'), life:1500 })
   if (!m.monthly || !m.estimatedCost)
-    return toast.add({ severity:'warn', summary:'Completa consumo mensual y costo estimado', life:1500 })
+    return toast.add({ severity:'warn', summary: t('devices.manual.fillFields'), life:1500 })
 
   const monthly       = Number(m.monthly)
   const estimatedCost = Number(m.estimatedCost)
@@ -246,56 +248,56 @@ const deviceTypeByPlanLabel = computed(() =>
 
   <div class="devices-wrap">
     <div class="header">
-      <h2>Mis Dispositivos</h2>
+      <h2>{{ t('devices.title') }}</h2>
       <Tag :value="planBadge" severity="info" />
     </div>
 
     <!-- Agregar -->
     <Card class="mb-3">
-      <template #title>Agregar dispositivo</template>
+      <template #title>{{ t('devices.addDevice') }}</template>
       <template #content>
         <div class="actions">
           <Button class="btn-oxford"
-                  :label="plan === 'basic' ? 'Agregar Manual' : deviceTypeByPlan === 'plug' ? 'Agregar Enchufe' : 'Agregar Sensor'"
+                  :label="plan === 'basic' ? t('devices.addManual') : deviceTypeByPlan === 'plug' ? t('devices.addPlug') : t('devices.addSensor')"
                   :disabled="!canAdd"
                   @click="addDevice" />
-          <Tag v-if="!canAdd" value="Límite alcanzado" severity="danger" />
+          <Tag v-if="!canAdd" :value="t('devices.limitReached')" severity="danger" />
         </div>
         <small class="hint">
-          Plan: <b>{{ plan === 'basic' ? 'Básico' : plan === 'student' ? 'Estudiantil' : 'Familiar' }}</b>.
-          Tipo permitido: <b>{{ deviceTypeByPlanLabel }}</b>.
+          {{ t('devices.plan') }}: <b>{{ plan === 'basic' ? t('devices.plans.basic') : plan === 'student' ? t('devices.plans.student') : t('devices.plans.family') }}</b>.
+          {{ t('devices.allowedType') }}: <b>{{ deviceTypeByPlanLabel }}</b>.
         </small>
       </template>
     </Card>
 
     <!-- Lista -->
     <Card class="mb-3">
-      <template #title>Lista de dispositivos</template>
+      <template #title>{{ t('devices.list') }}</template>
       <template #content>
         <div class="filters">
           <IconField iconPosition="left" class="search-field w-20rem">
             <InputIcon class="pi pi-search" />
-            <InputText v-model="search" placeholder="Buscar por nombre..." />
+            <InputText v-model="search" :placeholder="t('devices.search')" />
           </IconField>
         </div>
 
         <DataTable :value="tableData" :loading="loading" dataKey="id" selectionMode="single" v-model:selection="selected">
-          <Column field="name" header="Nombre" />
-          <Column header="Tipo">
+          <Column field="name" :header="t('devices.name')" />
+          <Column :header="t('devices.type')">
             <template #body="{ data }">
-              {{ data.type === 'plug' ? 'Enchufe' : data.type === 'sensor' ? 'Sensor' : 'Manual' }}
+              {{ data.type === 'plug' ? t('devices.types.plug') : data.type === 'sensor' ? t('devices.types.sensor') : t('devices.types.manual') }}
             </template>
           </Column>
 
           <!-- Zona (solo familiar) -->
-          <Column v-if="plan === 'family'" header="Zona">
+          <Column v-if="plan === 'family'" :header="t('devices.zone')">
             <template #body="{ data }">
               <Dropdown
                   v-model="data.zoneId"
                   :options="zones"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="Sin zona"
+                  :placeholder="t('devices.noZone')"
                   class="w-12rem"
                   appendTo="body"
                   @change="updateDeviceZone(data)"
@@ -304,14 +306,14 @@ const deviceTypeByPlanLabel = computed(() =>
           </Column>
 
           <!-- Power + Estado (no básico) -->
-          <Column v-if="plan !== 'basic'" header="Power">
+          <Column v-if="plan !== 'basic'" :header="t('devices.power')">
             <template #body="{ data }">
               <InputSwitch :modelValue="data.status === 'on'" @update:modelValue="() => togglePower(data)" />
             </template>
           </Column>
-          <Column v-if="plan !== 'basic'" header="Estado">
+          <Column v-if="plan !== 'basic'" :header="t('devices.status')">
             <template #body="{ data }">
-              <Tag :value="data.status === 'on' ? 'Encendido' : 'Apagado'"
+              <Tag :value="data.status === 'on' ? t('devices.turnOn') : t('devices.turnOff')"
                    :severity="severityForStatus(data.status)" />
             </template>
           </Column>
@@ -321,46 +323,46 @@ const deviceTypeByPlanLabel = computed(() =>
 
     <!-- Personalizar / Desvincular (no básico) -->
     <Card v-if="plan !== 'basic'">
-      <template #title>Personalizar / Desvincular</template>
+      <template #title>{{ t('devices.customize') }}</template>
       <template #content>
         <div class="edit-row">
-          <Dropdown v-model="selected" :options="tableData" optionLabel="name" placeholder="Selecciona"
+          <Dropdown v-model="selected" :options="tableData" optionLabel="name" :placeholder="t('devices.selectDevice')"
                     class="w-20rem drop-right" appendTo="self" />
-          <InputText v-model="newName" placeholder="Nuevo nombre" class="w-20rem" />
-          <Button label="Guardar" :disabled="!selected || !newName" @click="rename" class="btn-oxford" />
-          <Button label="Desvincular" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
+          <InputText v-model="newName" :placeholder="t('devices.newName')" class="w-20rem" />
+          <Button :label="t('common.save')" :disabled="!selected || !newName" @click="rename" class="btn-oxford" />
+          <Button :label="t('devices.unlink')" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
         </div>
       </template>
     </Card>
 
     <!-- Solo Desvincular (básico) -->
     <Card v-else>
-      <template #title>Desvincular</template>
+      <template #title>{{ t('devices.unlinkSection') }}</template>
       <template #content>
         <div class="edit-row">
-          <Dropdown v-model="selected" :options="tableData" optionLabel="name" placeholder="Selecciona"
+          <Dropdown v-model="selected" :options="tableData" optionLabel="name" :placeholder="t('devices.selectDevice')"
                     class="w-20rem drop-right" appendTo="self" />
-          <Button label="Desvincular" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
+          <Button :label="t('devices.unlink')" severity="danger" :disabled="!selected" @click="unlink" class="btn-h31" />
         </div>
       </template>
     </Card>
 
     <!-- Zonas (solo familiar) -->
     <Card v-if="plan === 'family'" class="mt-3">
-      <template #title>Zonas</template>
+      <template #title>{{ t('devices.zones.title') }}</template>
       <template #content>
         <div class="edit-row">
-          <InputText v-model="newZoneName" placeholder="Nueva zona (ej. Sala, Cocina)" class="w-20rem" />
-          <Button label="Agregar" class="btn-oxford" :disabled="!newZoneName" @click="addZone" />
+          <InputText v-model="newZoneName" :placeholder="t('devices.zones.newZone')" class="w-20rem" />
+          <Button :label="t('devices.zones.add')" class="btn-oxford" :disabled="!newZoneName" @click="addZone" />
         </div>
 
         <DataTable :value="zones" dataKey="id" class="mt-2">
-          <Column field="name" header="Nombre" />
-          <Column header="Acciones" :style="{width:'200px'}">
+          <Column field="name" :header="t('devices.name')" />
+          <Column :header="t('devices.actions')" :style="{width:'200px'}">
             <template #body="{ data }">
               <div class="row-actions">
-                <Button label="Renombrar" size="small" text @click="renameZone(data)" />
-                <Button label="Eliminar" size="small" severity="danger" text @click="removeZone(data)" />
+                <Button :label="t('common.edit')" size="small" text @click="renameZone(data)" />
+                <Button :label="t('common.delete')" size="small" severity="danger" text @click="removeZone(data)" />
               </div>
             </template>
           </Column>
@@ -369,22 +371,22 @@ const deviceTypeByPlanLabel = computed(() =>
     </Card>
 
     <!-- Modal Manual -->
-    <Dialog v-model:visible="showManualDialog" modal header="Nuevo dispositivo manual" :style="{ width:'520px' }">
+    <Dialog v-model:visible="showManualDialog" modal :header="t('devices.manual.title')" :style="{ width:'520px' }">
       <div class="form-grid">
-        <label>Nombre</label>
+        <label>{{ t('devices.name') }}</label>
         <div class="auto-name">{{ autoManualName }}</div>
 
-        <label>Tipo de dispositivo</label>
+        <label>{{ t('devices.manual.deviceType') }}</label>
         <Dropdown v-model="manualForm.deviceKind" :options="deviceCatalog" optionLabel="label" optionValue="value"
-                  placeholder="Selecciona" appendTo="body" :scrollHeight="'340px'" />
+                  :placeholder="t('devices.selectDevice')" appendTo="body" :scrollHeight="'340px'" />
 
-        <label>Consumo mensual (kWh)</label>
+        <label>{{ t('devices.manual.monthlyConsumption') }}</label>
         <InputText v-model="manualForm.metrics.monthly" type="number" inputmode="decimal" />
 
-        <label>Costo estimado mensual (S/)</label>
+        <label>{{ t('devices.manual.estimatedCost') }}</label>
         <InputText v-model="manualForm.metrics.estimatedCost" type="number" inputmode="decimal" />
 
-        <label>Tarifa por kWh (S/)</label>
+        <label>{{ t('devices.manual.tariff') }}</label>
         <InputText v-model="manualForm.metrics.tariff" type="number" inputmode="decimal" />
       </div>
 
@@ -393,8 +395,8 @@ const deviceTypeByPlanLabel = computed(() =>
       </small>
 
       <template #footer>
-        <Button label="Cancelar" severity="secondary" text class="btn-h31" @click="showManualDialog=false" />
-        <Button label="Guardar" class="btn-oxford" @click="createManualDevice" />
+        <Button :label="t('common.cancel')" severity="secondary" text class="btn-h31" @click="showManualDialog=false" />
+        <Button :label="t('common.save')" class="btn-oxford" @click="createManualDevice" />
       </template>
     </Dialog>
   </div>
