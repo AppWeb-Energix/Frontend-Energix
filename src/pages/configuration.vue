@@ -2,104 +2,108 @@
   <div class="configuration-container">
     <div class="configuration-content">
       <!-- Header -->
-      <h2 class="main-title">Configuración</h2>
+      <h2 class="main-title">{{ t('configuration.title') }}</h2>
       <p class="subtitle">
-        Plan actual: <span class="highlight">Plan Estudiantil</span> | Historial: <span class="highlight">90 días</span> | Dispositivos: <span class="highlight">2</span>
+        {{ t('configuration.subtitle', {
+          plan: planInfo.plan,
+          history: planInfo.history,
+          devices: planInfo.devices
+        }) }}
       </p>
 
       <!-- Sección Perfil -->
       <div class="section-card">
-        <h3 class="section-title">Perfil</h3>
+        <h3 class="section-title">{{ t('configuration.profile.title') }}</h3>
         <div class="form-grid-2">
           <div class="form-group">
-            <label class="form-label">Nombre</label>
-            <input v-model="profile.name" type="text" placeholder="Jorge" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.name') }}</label>
+            <input v-model="profile.name" type="text" :placeholder="t('configuration.profile.namePlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Apellido</label>
-            <input v-model="profile.lastName" type="text" placeholder="Benavides" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.lastName') }}</label>
+            <input v-model="profile.lastName" type="text" :placeholder="t('configuration.profile.lastNamePlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Correo</label>
-            <input v-model="profile.email" type="email" placeholder="jorge12@gmail.com" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.email') }}</label>
+            <input v-model="profile.email" type="email" :placeholder="t('configuration.profile.emailPlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">DNI</label>
-            <input v-model="profile.dni" type="text" placeholder="99999999" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.dni') }}</label>
+            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Distrito</label>
-            <input v-model="profile.district" type="text" placeholder="Miraflores" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.district') }}</label>
+            <input v-model="profile.district" type="text" :placeholder="t('configuration.profile.districtPlaceholder')" class="form-input" />
           </div>
         </div>
 
         <div class="button-group">
-          <button @click="saveProfile" class="btn-primary">Guardar cambios</button>
-          <button @click="cancelProfile" class="btn-secondary">Cancelar</button>
+          <button @click="saveProfile" class="btn-primary">{{ t('configuration.buttons.save') }}</button>
+          <button @click="cancelProfile" class="btn-secondary">{{ t('configuration.buttons.cancel') }}</button>
         </div>
       </div>
 
       <!-- Sección Personalización del panel -->
       <div class="section-card">
-        <h3 class="section-title">Personalización del panel</h3>
+        <h3 class="section-title">{{ t('configuration.personalization.title') }}</h3>
 
         <div class="personalization-grid">
           <div class="checkbox-group">
             <input type="checkbox" id="kpiCurrent" v-model="kpiCurrent" class="form-checkbox" />
-            <label for="kpiCurrent" class="checkbox-label">KPI Consumo actual</label>
+            <label for="kpiCurrent" class="checkbox-label">{{ t('configuration.personalization.kpiCurrent') }}</label>
           </div>
           <div class="checkbox-group">
             <input type="checkbox" id="kpiCost" v-model="kpiCost" class="form-checkbox" />
-            <label for="kpiCost" class="checkbox-label">KPI Costo estimado</label>
+            <label for="kpiCost" class="checkbox-label">{{ t('configuration.personalization.kpiCost') }}</label>
           </div>
           <div class="checkbox-group">
             <input type="checkbox" id="kpiMonthly" v-model="kpiMonthly" class="form-checkbox" />
-            <label for="kpiMonthly" class="checkbox-label">KPI Consumo mensual</label>
+            <label for="kpiMonthly" class="checkbox-label">{{ t('configuration.personalization.kpiMonthly') }}</label>
           </div>
 
           <div class="checkbox-group">
             <input type="checkbox" id="chartHourly" v-model="chartHourly" class="form-checkbox" />
-            <label for="chartHourly" class="checkbox-label">Gráfico: Consumo por hora (hoy)</label>
+            <label for="chartHourly" class="checkbox-label">{{ t('configuration.personalization.chartHourly') }}</label>
           </div>
           <div class="checkbox-group">
             <input type="checkbox" id="chartMonthly" v-model="chartMonthly" class="form-checkbox" />
-            <label for="chartMonthly" class="checkbox-label">Gráfico: Consumo este mes (ahorro)</label>
+            <label for="chartMonthly" class="checkbox-label">{{ t('configuration.personalization.chartMonthly') }}</label>
           </div>
           <div class="checkbox-group">
             <input type="checkbox" id="chartDevice" v-model="chartDevice" class="form-checkbox" />
-            <label for="chartDevice" class="checkbox-label">Gráfico: Consumo por dispositivo (Status)</label>
+            <label for="chartDevice" class="checkbox-label">{{ t('configuration.personalization.chartDevice') }}</label>
           </div>
         </div>
 
         <div class="button-group">
-          <button @click="savePersonalization" class="btn-primary">Guardar cambios</button>
-          <button @click="resetPersonalization" class="btn-secondary">Restablecer</button>
+          <button @click="savePersonalization" class="btn-primary">{{ t('configuration.buttons.save') }}</button>
+          <button @click="resetPersonalization" class="btn-secondary">{{ t('configuration.buttons.reset') }}</button>
         </div>
       </div>
 
       <!-- Sección Seguridad -->
       <div class="section-card">
-        <h3 class="section-title">Seguridad</h3>
+        <h3 class="section-title">{{ t('configuration.security.title') }}</h3>
         <div class="security-grid">
           <div class="form-group">
-            <label class="form-label">Contraseña actual</label>
+            <label class="form-label">{{ t('configuration.security.currentPassword') }}</label>
             <input v-model="security.currentPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Nueva contraseña</label>
+            <label class="form-label">{{ t('configuration.security.newPassword') }}</label>
             <input v-model="security.newPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Confirmar contraseña</label>
+            <label class="form-label">{{ t('configuration.security.confirmPassword') }}</label>
             <input v-model="security.confirmPassword" type="password" class="form-input" />
           </div>
         </div>
         <div class="button-container">
-          <button @click="updatePassword" class="btn-primary">Actualizar contraseña</button>
+          <button @click="updatePassword" class="btn-primary">{{ t('configuration.security.updatePassword') }}</button>
         </div>
       </div>
 
@@ -108,10 +112,13 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { usePersonalizationStore } from '../stores/personalization'
 import { changePasswordService } from '@/modules/auth/auth.service'
+
+const { t } = useI18n()
 
 const personalizationStore = usePersonalizationStore()
 const {
@@ -162,6 +169,23 @@ const security = reactive({
 
 const fileInput = ref(null)
 
+// Computed para el subtítulo con datos del plan
+const userPlan = computed(() => {
+  try {
+    const user = JSON.parse(localStorage.getItem('energix-user'))
+    return user?.plan || 'student'
+  } catch {
+    return 'student'
+  }
+})
+
+const planInfo = computed(() => {
+  const planName = t(`configuration.plans.${userPlan.value}`)
+  const history = userPlan.value === 'basic' ? '7 días' : userPlan.value === 'student' ? '90 días' : '∞'
+  const devices = userPlan.value === 'basic' ? '1' : userPlan.value === 'student' ? '2' : '∞'
+  return { plan: planName, history, devices }
+})
+
 // Cargar datos del usuario autenticado
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('energix-user'))
@@ -194,7 +218,7 @@ const saveProfile = async () => {
     })
     if (!response.ok) {
       const data = await response.json().catch(() => ({}))
-      throw new Error(data.message || 'Error al guardar el perfil')
+      throw new Error(data.message || t('configuration.messages.profileError'))
     }
     // Actualizar localStorage
     const user = JSON.parse(localStorage.getItem('energix-user'))
@@ -206,14 +230,14 @@ const saveProfile = async () => {
       district: profile.district
     })
     localStorage.setItem('energix-user', JSON.stringify(user))
-    alert('Perfil guardado correctamente')
+    alert(t('configuration.messages.profileSaved'))
   } catch (err) {
-    alert(err.message || 'Error al guardar el perfil')
+    alert(err.message || t('configuration.messages.profileError'))
   }
 }
 
 const cancelProfile = () => {
-  alert('Cambios cancelados')
+  alert(t('configuration.messages.changesCancelled'))
 }
 
 const handleFileUpload = (event) => {
@@ -226,28 +250,28 @@ const handleFileUpload = (event) => {
 // Funciones para personalización
 const savePersonalization = () => {
   personalizationStore.savePersonalization()
-  alert('Personalización guardada y reflejada en el Dashboard')
+  alert(t('configuration.messages.personalizationSaved'))
 }
 const resetPersonalization = () => {
   personalizationStore.resetToDefaults()
-  alert('Personalización restablecida')
+  alert(t('configuration.messages.personalizationReset'))
 }
 
 // Función para seguridad
 const updatePassword = async () => {
   if (security.newPassword !== security.confirmPassword) {
-    alert('Las contraseñas no coinciden')
+    alert(t('configuration.messages.passwordMismatch'))
     return
   }
   try {
     const userId = getUserId()
     await changePasswordService(userId, security.currentPassword, security.newPassword)
-    alert('Contraseña actualizada correctamente')
+    alert(t('configuration.messages.passwordUpdated'))
     security.currentPassword = ''
     security.newPassword = ''
     security.confirmPassword = ''
   } catch (err) {
-    alert(err.message || 'Error al actualizar la contraseña')
+    alert(err.message || t('configuration.messages.passwordError'))
   }
 }
 </script>

@@ -5,7 +5,7 @@
     </div>
     <Menu :model="items" :pt="menuPt" class="p-menu-custom" />
     <Button
-      label="Cerrar sesión"
+      :label="t('nav.logout')"
       icon="pi pi-sign-out"
       class="logout-btn"
       @click="handleLogout"
@@ -16,10 +16,11 @@
   <div class="content">
     <header class="topbar">
       <div class="header-left">
+        <LanguageSwitcher class="ml-3" />
         <span> {{ day }} · <b>{{ date }} de {{ month }}</b> · {{hour}}</span>
       </div>
       <div class="header-right">
-        <span>Hola, <b>{{userName}} </b></span>
+        <span>{{ t('header.greeting') }}, <b>{{userName}} </b></span>
         <avatar icon="pi pi-user" class="ml-2" size="large" style="background-color: #dee9fc; color: #1a2551" shape="circle"  />
       </div>
     </header>
@@ -31,9 +32,11 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import Menu from 'primevue/menu'
 import Button from 'primevue/button'
 import Avatar from 'primevue/avatar'
+import LanguageSwitcher from '@/pages/language-switcher.vue'
 import { logout } from '../utils/mockAuth.js'
 import { usePersonalizationStore } from '../stores/personalization.js'
 import { useAuth } from '@/composables/useAuth'
@@ -43,6 +46,7 @@ const router = useRouter()
 const personalizationStore = usePersonalizationStore()
 const { userId, userName, userPlan, getCurrentUser } = useAuth()
 const { day, date, month, hour } = useDateTime();
+const { t } = useI18n()
 
 
 function handleLogout() {
@@ -52,12 +56,12 @@ function handleLogout() {
 }
 
 const items = [
-  { label: 'Dashboard', icon: 'pi pi-objects-column', command: () => router.push({ name: 'dashboard' }) },
-  { label: 'Alertas', icon: 'pi pi-bell', command: () => router.push({ name: 'alerts' }) },
-  { label: 'Mis Dispositivos', icon: 'pi pi-clipboard', command: () => router.push({ name: 'devices' }) },
-  { label: 'Suscripciones', icon: 'pi pi-credit-card', command: () => router.push({ name: 'subscriptions' }) },
-  { label: 'Recompensas', icon: 'pi pi-gift', command: () => router.push({ name: 'rewards' }) },
-  { label: 'Configuración', icon: 'pi pi-cog', command: () => router.push('/configuration') }
+  { label: t('nav.dashboard'), icon: 'pi pi-objects-column', command: () => router.push({ name: 'dashboard' }) },
+  { label: t('nav.alerts'), icon: 'pi pi-bell', command: () => router.push({ name: 'alerts' }) },
+  { label: t('nav.devices'), icon: 'pi pi-clipboard', command: () => router.push({ name: 'devices' }) },
+  { label: t('nav.subscriptions'), icon: 'pi pi-credit-card', command: () => router.push({ name: 'subscriptions' }) },
+  { label: t('nav.rewards'), icon: 'pi pi-gift', command: () => router.push({ name: 'rewards' }) },
+  { label: t('nav.configuration'), icon: 'pi pi-cog', command: () => router.push('/configuration') }
 ]
 
 const menuPt = {
@@ -127,6 +131,9 @@ const menuPt = {
   box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 .header-left{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-left: 1.5rem;
 }
 .main {

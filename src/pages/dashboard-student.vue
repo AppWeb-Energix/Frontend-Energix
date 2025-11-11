@@ -1,13 +1,10 @@
 <template>
   <div class="content">
-    <!-- Header -->
-    <header class="topbar">
-    </header>
 
     <main class="main">
       <!-- KPIs -->
       <section aria-labelledby="ov-title">
-        <h2 id="ov-title" class="section-title">Resumen general</h2>
+        <h2 id="ov-title" class="section-title">{{ t('dashboard.title') }}</h2>
         <div class="kpi-group">
           <article class="kpi" v-for="(item, i) in kpis" :key="i">
             <h3 class="kpi-title">{{ item.title }}</h3>
@@ -20,21 +17,21 @@
       <!-- Charts -->
       <section class="grid-12">
         <figure v-if="personalization.chartHourly" class="card chart-box col-span-8">
-          <h3>📈 Consumo de energía hoy (por hora)</h3>
+          <h3>📈 {{ t('dashboard.charts.hourlyConsumption') }}</h3>
           <div class="chart-container">
             <canvas id="chartPorHora"></canvas>
           </div>
         </figure>
 
         <figure v-if="personalization.chartDevice" class="card chart-box col-span-4">
-          <h3>⚡ Consumo por dispositivo</h3>
+          <h3>⚡ {{ t('dashboard.charts.deviceConsumption') }}</h3>
           <div class="chart-container small">
             <canvas id="chartPorDispositivo"></canvas>
           </div>
         </figure>
 
         <figure v-if="personalization.chartWeekly" class="card chart-box col-span-12">
-          <h3>📊 Consumo esta semana (diario)</h3>
+          <h3>📊 {{ t('dashboard.charts.weeklyConsumption') }}</h3>
           <div class="chart-container">
             <canvas id="chartPorSemana"></canvas>
           </div>
@@ -46,11 +43,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Chart, registerables } from 'chart.js'
 import { DevicesApi, onDeviceChange } from '@/shared/infrastructure/endpoints/devices.endpoint.js'
 import { usePersonalizationStore } from '@/stores/personalization'
 import { useAuth } from '@/composables/useAuth'
 
+const { t } = useI18n()
 const personalization = usePersonalizationStore()
 const { userId, userName, userPlan, getCurrentUser } = useAuth()
 
@@ -196,11 +195,11 @@ const estimatedCost = computed(() => weekTotalKwh.value * tarifa)
 const dailyAvgKwh = computed(() => week7.value.length ? weekTotalKwh.value / week7.value.length : 0)
 
 const kpis = computed(() => [
-  { title: 'Dispositivos activos', value: totalDevices.value, sub: 'Registrados en tu cuenta' },
-  { title: 'Consumo actual', value: `${currentPowerKwh.value.toFixed(2)} kWh`, sub: 'Medición en tiempo real' },
-  { title: 'Consumo de hoy', value: `${todayTotalKwh.value.toFixed(2)} kWh`, sub: 'Total hasta el momento' },
-  { title: 'Costo semanal estimado', value: `S/${estimatedCost.value.toFixed(2)}`, sub: 'Basado en tu tarifa actual' },
-  { title: 'Promedio diario', value: `${dailyAvgKwh.value.toFixed(2)} kWh`, sub: 'Últimos 7 días' }
+  { title: t('dashboard.kpi.activeDevices'), value: totalDevices.value, sub: t('dashboard.kpi.registeredInAccount') },
+  { title: t('dashboard.kpi.currentConsumption'), value: `${currentPowerKwh.value.toFixed(2)} ${t('units.kWh')}`, sub: t('dashboard.kpi.realTimeMeasurement') },
+  { title: t('dashboard.kpi.todayConsumption'), value: `${todayTotalKwh.value.toFixed(2)} ${t('units.kWh')}`, sub: t('dashboard.kpi.totalSoFar') },
+  { title: t('dashboard.kpi.estimatedWeeklyCost'), value: `${t('units.currency')}${estimatedCost.value.toFixed(2)}`, sub: t('dashboard.kpi.basedOnCurrentRate') },
+  { title: t('dashboard.kpi.dailyAverage'), value: `${dailyAvgKwh.value.toFixed(2)} ${t('units.kWh')}`, sub: t('dashboard.kpi.lastDays') }
 ])
 
 /* ===== Lifecycle ===== */
@@ -229,6 +228,32 @@ onBeforeUnmount(() => Object.values(charts).forEach(ch => ch?.destroy()))
 </script>
 
 <style scoped>
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.main > section {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b2541;
+}
+
 .grid-12 {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -259,12 +284,14 @@ canvas {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+  justify-items: center;
 }
 .kpi {
   background: #fff;
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  width: 100%;
 }
 .kpi-title {
   font-size: .9rem;

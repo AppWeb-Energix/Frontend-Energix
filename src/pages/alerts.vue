@@ -4,7 +4,7 @@
   <div class="alerts-container">
     <div class="alerts-content">
       <div class="alerts-header">
-        <h2 class="alerts-title">Alertas</h2>
+        <h2 class="alerts-title">{{ t('alerts.title') }}</h2>
 
         <div class="alerts-actions">
           <!-- Simular solo en Estudiantil / Familiar -->
@@ -13,10 +13,10 @@
               class="btn-outline"
               @click="simulateAlert"
               :disabled="loading"
-              title="Simular nueva alerta"
+              :title="t('alerts.simulateAlert')"
           >
             <span class="add-icon">+</span>
-            Simular alerta
+            {{ t('alerts.simulateAlert') }}
           </button>
 
           <button
@@ -25,14 +25,14 @@
               :disabled="loading || unreadCount === 0"
           >
             <span class="mark-icon">✓</span>
-            Marcar todas como leídas
+            {{ t('alerts.markAllAsRead') }}
           </button>
         </div>
       </div>
 
       <!-- Contador -->
       <div v-if="unreadCount > 0" class="unread-badge">
-        {{ unreadCount }} alerta{{ unreadCount > 1 ? 's' : '' }} sin leer
+        {{ unreadCount }} {{ unreadCount > 1 ? t('alerts.unreadPlural') : t('alerts.unreadSingular') }}
       </div>
 
       <!-- Lista -->
@@ -61,13 +61,13 @@
         </template>
 
         <div v-else-if="!loading" class="alerts-empty">
-          <h3>No hay alertas</h3>
-          <p>Cuando tengas novedades, aparecerán aquí.</p>
+          <h3>{{ t('alerts.noAlerts') }}</h3>
+          <p>{{ t('alerts.noAlertsDescription') }}</p>
         </div>
 
         <div v-if="loading" class="alerts-loading">
           <div class="spinner"></div>
-          <p>Cargando alertas...</p>
+          <p>{{ t('common.loading') }}</p>
         </div>
       </div>
     </div>
@@ -76,7 +76,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { AlertsApi } from '@/shared/infrastructure/endpoints/alerts.endpoint'
+
+const { t } = useI18n()
 
 // Estado
 const loading = ref(false)

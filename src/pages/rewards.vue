@@ -1,34 +1,34 @@
 <template>
   <section class="wrap">
-    <h2 class="title">Recompensas</h2>
-    <p class="subtitle">Invita y gana puntos. Canjéalos pronto por beneficios.</p>
+    <h2 class="title">{{ t('rewards.title') }}</h2>
+    <p class="subtitle">{{ t('rewards.subtitle') }}</p>
 
     <!-- ===== Plans Dashboard View ===== -->
     <div class="grid">
       <article class="card kpi">
         <div class="kpi-top">
-          <h3>Total de puntos</h3>
+          <h3>{{ t('rewards.kpi.totalPoints') }}</h3>
           <div class="points">{{ points }}</div>
         </div>
         <div class="progress">
           <div class="bar" :style="{ width: Math.min(levelProgress, 100) + '%' }"></div>
         </div>
-        <p class="muted">Nivel {{ level }} · {{ levelProgress.toFixed(0) }}% hacia el siguiente</p>
+        <p class="muted">{{ t('rewards.kpi.level', { level }) }} · {{ t('rewards.kpi.levelProgress', { progress: levelProgress.toFixed(0) }) }}</p>
       </article>
 
       <article class="card kpi">
-        <h3>Referidos</h3>
+        <h3>{{ t('rewards.kpi.referrals') }}</h3>
         <p class="big">{{ stats.total }}</p>
-        <p class="muted">Activos: {{ stats.activated }} · Recompensados: {{ stats.rewarded }}</p>
+        <p class="muted">{{ t('rewards.kpi.active') }}: {{ stats.activated }} · {{ t('rewards.kpi.rewarded') }}: {{ stats.rewarded }}</p>
       </article>
 
       <article class="card kpi">
-        <h3>Política de referidos</h3>
+        <h3>{{ t('rewards.kpi.policy') }}</h3>
         <ul class="bullets">
-          <li>1 código activo cada 24 h.</li>
-          <li>Recompensa por referido activado: <b>+{{ POLICY.rewardPoints }}</b> pts.</li>
-          <li>Máx. <b>{{ POLICY.maxUsesPerCode }}</b> usos por código.</li>
-          <li>Requiere plan activo.</li>
+          <li>{{ t('rewards.policy.activeCode') }}</li>
+          <li v-html="t('rewards.policy.rewardPerReferral', { points: POLICY.rewardPoints })"></li>
+          <li v-html="t('rewards.policy.maxUses', { max: POLICY.maxUsesPerCode })"></li>
+          <li>{{ t('rewards.policy.requiresPlan') }}</li>
         </ul>
       </article>
     </div>
@@ -36,40 +36,40 @@
     <!-- ===== Generate Referral Code (+ policy) ===== -->
     <article class="card">
       <div class="row between">
-        <h3>Invita con tu código</h3>
-        <span v-if="activeCode" class="badge">Código activo</span>
+        <h3>{{ t('rewards.code.title') }}</h3>
+        <span v-if="activeCode" class="badge">{{ t('rewards.code.activeLabel') }}</span>
       </div>
 
       <div class="code-box" v-if="activeCode">
         <div class="code">{{ activeCode }}</div>
         <div class="code-actions">
-          <button class="btn btn-primary" @click="copyCode">Copiar</button>
-          <button class="btn outline" @click="shareLink">Compartir</button>
-          <button class="btn danger" @click="revokeCode">Revocar</button>
+          <button class="btn btn-primary" @click="copyCode">{{ t('rewards.code.copy') }}</button>
+          <button class="btn outline" @click="shareLink">{{ t('rewards.code.share') }}</button>
+          <button class="btn danger" @click="revokeCode">{{ t('rewards.code.revoke') }}</button>
         </div>
-        <p class="muted">Caduca: {{ expiresAtHuman }}</p>
+        <p class="muted">{{ t('rewards.code.expires', { date: expiresAtHuman }) }}</p>
       </div>
 
       <div v-else class="no-code">
-        <p class="muted">No tienes un código activo.</p>
-        <button class="btn btn-primary" :disabled="!canGenerate" @click="generateCode">Generar código</button>
-        <p v-if="!hasActivePlan" class="error small">Necesitas un plan activo para generar códigos.</p>
-        <p v-if="cooldownMsg" class="muted small">Próximo intento: {{ cooldownMsg }}</p>
+        <p class="muted">{{ t('rewards.code.noActive') }}</p>
+        <button class="btn btn-primary" :disabled="!canGenerate" @click="generateCode">{{ t('rewards.code.generate') }}</button>
+        <p v-if="!hasActivePlan" class="error small">{{ t('rewards.code.requiresPlan') }}</p>
+        <p v-if="cooldownMsg" class="muted small">{{ t('rewards.code.cooldown', { time: cooldownMsg }) }}</p>
       </div>
     </article>
 
     <!-- ===== Reward Referrer / Referrer Rewarded ===== -->
     <article class="card">
-      <h3>Historial de referidos</h3>
+      <h3>{{ t('rewards.history.title') }}</h3>
 
       <table class="table" v-if="referrals.length">
         <thead>
         <tr>
-          <th>Usuario</th>
-          <th>Código</th>
-          <th>Estado</th>
-          <th>Fecha</th>
-          <th>Puntos</th>
+          <th>{{ t('rewards.history.user') }}</th>
+          <th>{{ t('rewards.history.code') }}</th>
+          <th>{{ t('rewards.history.status') }}</th>
+          <th>{{ t('rewards.history.date') }}</th>
+          <th>{{ t('rewards.history.points') }}</th>
           <th></th>
         </tr>
         </thead>
@@ -88,20 +88,23 @@
                 class="btn tiny btn-primary"
                 @click="rewardReferrer(r.id)"
             >
-              Acreditar recompensa
+              {{ t('rewards.history.creditReward') }}
             </button>
           </td>
         </tr>
         </tbody>
       </table>
 
-      <p v-else class="muted">Aún no tienes referidos.</p>
+      <p v-else class="muted">{{ t('rewards.history.noReferrals') }}</p>
     </article>
   </section>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 /** ===== Mock de usuario/plan (ajusta con tu store real) ===== */
 const hasActivePlan = true   // cámbialo según tu estado real
@@ -165,9 +168,7 @@ const expiresAtHuman = computed(() =>
     codeExpiresAt.value ? new Date(codeExpiresAt.value).toLocaleString() : ''
 )
 function labelStatus(s) {
-  return s === 'pending' ? 'Pendiente'
-      : s === 'activated' ? 'Activado'
-          : 'Recompensado'
+  return t(`rewards.history.statuses.${s}`)
 }
 
 /** ===== Acciones ===== */
@@ -184,10 +185,14 @@ function copyCode() {
 function shareLink() {
   const link = `${location.origin}/signup?ref=${activeCode.value}`
   if (navigator.share) {
-    navigator.share({ title: 'Únete a Energix', text: 'Regístrate con mi código:', url: link })
+    navigator.share({
+      title: t('rewards.share.title'),
+      text: t('rewards.share.text'),
+      url: link
+    })
   } else {
     navigator.clipboard?.writeText(link)
-    alert('Enlace copiado: ' + link)
+    alert(t('rewards.code.linkCopied', { link }))
   }
 }
 function revokeCode() {
