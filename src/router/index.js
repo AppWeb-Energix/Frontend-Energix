@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '@/modules/auth/auth.service'
+import { isAuthenticated } from '@/identity/domain/auth/auth.service'
 
 const getUserPlan = () => {
     try {
@@ -29,19 +29,19 @@ const getDashboardRouteName = (plan) => {
 }
 
 // --- Lazy load para rutas privadas ---
-const DashboardFamily = () => import('../pages/dashboard.vue')
-const DashboardStudent = () => import('../pages/dashboard-student.vue')
-const DashboardBasic = () => import('../pages/dashboard-basic.vue')
+const DashboardFamily = () => import('../dashboard/presentation/views/dashboard.vue')
+const DashboardStudent = () => import('../dashboard/presentation/views/dashboard-student.vue')
+const DashboardBasic = () => import('../dashboard/presentation/views/dashboard-basic.vue')
 
-const Alerts = () => import('../pages/alerts.vue')
-const ConfigurationBasic = () => import('../pages/configuration-basic.vue')
-const Configuration = () => import('../pages/configuration.vue')
-const NotFound = () => import('../pages/notfound.vue')
-const Subscriptions = () => import('../pages/subscriptions.vue')
+const Alerts = () => import('../alert/presentation/views/alerts.vue')
+const ConfigurationBasic = () => import('../personalization/presentation/views/configuration-basic.vue')
+const Configuration = () => import('../personalization/presentation/views/configuration.vue')
+const NotFound = () => import('../shared/presentation/components/notfound.vue')
+const Subscriptions = () => import('../loyalty/presentation/views/subscriptions.vue')
 
 // Eager load para rutas críticas de autenticación
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
+import Login from '../identity/presentation/views/Login.vue'
+import Register from '../identity/presentation/views/Register.vue'
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL || '/'),
@@ -69,7 +69,7 @@ export const router = createRouter({
         {
             path: '/recompensas',
             name: 'rewards',
-            component: () => import('../pages/rewards.vue'),
+            component: () => import('../loyalty/presentation/views/rewards.vue'),
             meta: { title: 'Recompensas' }
         },
 
@@ -125,7 +125,7 @@ export const router = createRouter({
         {
             path: '/devices',
             name: 'devices',
-            component: () => import('@/pages/devices.vue'),
+            component: () => import('@/device/presentation/views/devices.vue'),
             meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
         // Redirección dinámica para configuración según el plan
