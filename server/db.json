@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "name": "Estudiante",
+      "name": "Angel",
       "lastName": "Prueba",
       "email": "studen@test.com",
       "password": "12345678",
@@ -11,7 +11,7 @@
       "id": 1
     },
     {
-      "name": "Basico",
+      "name": "Angel",
       "lastName": "dasdsad",
       "email": "test@ejemplo.com",
       "password": "12345678",
@@ -21,14 +21,24 @@
       "id": 2
     },
     {
-      "name": "Familia",
+      "name": "albaricoque",
       "lastName": "1",
       "email": "fam@test.com",
-      "password": "87654321",
+      "password": "12345678",
       "dni": "12345678",
       "district": "Net",
       "plan": "family",
       "id": 3
+    },
+    {
+      "name": "Sofia",
+      "lastName": "Siclla",
+      "email": "testreferido@gmail.com",
+      "password": "12345678",
+      "dni": "12345678",
+      "district": "miraflores",
+      "plan": "basic",
+      "id": 4
     }
   ],
   "codes": [
@@ -93,6 +103,31 @@
       "used": false
     }
   ],
+  "rewards": [
+    {
+      "id": 1,
+      "userId": "1",
+      "activeCode": "ENX-5ERHX9",
+      "expiresAt": "2025-11-12T20:15:36.974Z",
+      "lastGeneratedAt": "2025-11-11T20:15:36.974Z",
+      "uses": 1,
+      "maxUses": 5,
+      "rewardPoints": 50,
+      "totalPoints": 50
+    }
+  ],
+  "referrals": [
+    {
+      "id": 1,
+      "referrerId": "1",
+      "referredUserId": "4",
+      "code": "ENX-5ERHX9",
+      "status": "rewarded",
+      "points": 50,
+      "date": "2025-11-11T20:35:25.067Z",
+      "user": "Sofia Siclla"
+    }
+  ],
   "devices": [
     {
       "userId": 3,
@@ -135,50 +170,6 @@
       "id": 4
     },
     {
-      "userId": 1,
-      "linkedAt": "2025-10-08T21:54:42.219Z",
-      "status": "on",
-      "online": true,
-      "zoneId": null,
-      "name": "Enchufe refri",
-      "type": "plug",
-      "id": 5
-    },
-    {
-      "userId": 2,
-      "linkedAt": "2025-10-08T21:57:20.668Z",
-      "status": "off",
-      "online": false,
-      "zoneId": null,
-      "name": "Dispositivo 1",
-      "type": "manual",
-      "deviceKind": "refrigerator",
-      "metrics": {
-        "monthly": 145,
-        "estimatedCost": 45,
-        "tariff": 0.3,
-        "dailyAvg": 4.833333333333333
-      },
-      "id": 6
-    },
-    {
-      "userId": 2,
-      "linkedAt": "2025-10-08T21:57:58.254Z",
-      "status": "off",
-      "online": false,
-      "zoneId": null,
-      "name": "Dispositivo 2",
-      "type": "manual",
-      "deviceKind": "pc",
-      "metrics": {
-        "monthly": 60,
-        "estimatedCost": 18,
-        "tariff": 0.3,
-        "dailyAvg": 2
-      },
-      "id": 7
-    },
-    {
       "userId": 3,
       "linkedAt": "2025-10-08T22:57:36.728Z",
       "status": "on",
@@ -187,6 +178,50 @@
       "name": "Robot",
       "type": "sensor",
       "id": 8
+    },
+    {
+      "userId": 2,
+      "linkedAt": "2025-11-06T20:38:14.455Z",
+      "status": "off",
+      "online": false,
+      "zoneId": null,
+      "name": "Dispositivo 1",
+      "type": "manual",
+      "deviceKind": "washer",
+      "metrics": {
+        "monthly": 521,
+        "estimatedCost": 496,
+        "tariff": 213,
+        "dailyAvg": 17.366666666666667
+      },
+      "id": 9
+    },
+    {
+      "userId": 2,
+      "linkedAt": "2025-11-06T20:55:33.856Z",
+      "status": "off",
+      "online": false,
+      "zoneId": null,
+      "name": "Dispositivo 2",
+      "type": "manual",
+      "deviceKind": "washer",
+      "metrics": {
+        "monthly": 100,
+        "estimatedCost": 100,
+        "tariff": 100,
+        "dailyAvg": 3.3333333333333335
+      },
+      "id": 10
+    },
+    {
+      "userId": 1,
+      "linkedAt": "2025-11-06T20:56:44.344Z",
+      "status": "on",
+      "online": true,
+      "zoneId": null,
+      "name": "Celular",
+      "type": "plug",
+      "id": 11
     }
   ],
   "zones": [
@@ -259,7 +294,7 @@
       "message": "Dispositivo desvinculado",
       "details": "Se desvinculó Laptop enchufe (plug)",
       "timestamp": "2025-10-08T21:38:20.974Z",
-      "isRead": false,
+      "isRead": true,
       "id": 6
     },
     {
@@ -379,7 +414,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Estudiante!",
       "timestamp": "2025-10-08T21:53:01.222Z",
-      "isRead": false,
+      "isRead": true,
       "id": 18
     },
     {
@@ -389,7 +424,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un plug",
       "timestamp": "2025-10-08T21:54:31.868Z",
-      "isRead": false,
+      "isRead": true,
       "id": 19
     },
     {
@@ -399,7 +434,7 @@
       "message": "Dispositivo encendido",
       "details": "Dispositivo 1 ahora está encendido",
       "timestamp": "2025-10-08T21:54:33.048Z",
-      "isRead": false,
+      "isRead": true,
       "id": 20
     },
     {
@@ -409,7 +444,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un plug",
       "timestamp": "2025-10-08T21:54:42.249Z",
-      "isRead": false,
+      "isRead": true,
       "id": 21
     },
     {
@@ -419,7 +454,7 @@
       "message": "Dispositivo encendido",
       "details": "Dispositivo 2 ahora está encendido",
       "timestamp": "2025-10-08T21:54:43.955Z",
-      "isRead": false,
+      "isRead": true,
       "id": 22
     },
     {
@@ -429,7 +464,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Estudiante!",
       "timestamp": "2025-10-08T21:55:39.494Z",
-      "isRead": false,
+      "isRead": true,
       "id": 23
     },
     {
@@ -439,7 +474,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T21:55:47.480Z",
-      "isRead": false,
+      "isRead": true,
       "id": 24
     },
     {
@@ -479,7 +514,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T21:58:38.925Z",
-      "isRead": false,
+      "isRead": true,
       "id": 28
     },
     {
@@ -489,7 +524,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T21:59:36.246Z",
-      "isRead": false,
+      "isRead": true,
       "id": 29
     },
     {
@@ -499,7 +534,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Estudiante!",
       "timestamp": "2025-10-08T22:05:07.056Z",
-      "isRead": false,
+      "isRead": true,
       "id": 30
     },
     {
@@ -509,7 +544,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:05:32.681Z",
-      "isRead": false,
+      "isRead": true,
       "id": 31
     },
     {
@@ -529,7 +564,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:08:57.685Z",
-      "isRead": false,
+      "isRead": true,
       "id": 33
     },
     {
@@ -539,7 +574,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:09:21.501Z",
-      "isRead": false,
+      "isRead": true,
       "id": 34
     },
     {
@@ -559,7 +594,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Estudiante!",
       "timestamp": "2025-10-08T22:23:40.865Z",
-      "isRead": false,
+      "isRead": true,
       "id": 36
     },
     {
@@ -569,7 +604,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:24:00.882Z",
-      "isRead": false,
+      "isRead": true,
       "id": 37
     },
     {
@@ -579,7 +614,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:24:50.971Z",
-      "isRead": false,
+      "isRead": true,
       "id": 38
     },
     {
@@ -589,7 +624,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:47:44.841Z",
-      "isRead": false,
+      "isRead": true,
       "id": 39
     },
     {
@@ -619,7 +654,7 @@
       "message": "Dispositivo encendido",
       "details": "Dispositivo 4 ahora está encendido",
       "timestamp": "2025-10-08T22:55:05.492Z",
-      "isRead": false,
+      "isRead": true,
       "id": 42
     },
     {
@@ -629,7 +664,7 @@
       "message": "Dispositivo apagado",
       "details": "Dispositivo 4 ahora está apagado",
       "timestamp": "2025-10-08T22:55:08.336Z",
-      "isRead": false,
+      "isRead": true,
       "id": 43
     },
     {
@@ -639,7 +674,7 @@
       "message": "Sesión iniciada",
       "details": "¡Bienvenid@ de vuelta, Familia!",
       "timestamp": "2025-10-08T22:56:51.532Z",
-      "isRead": false,
+      "isRead": true,
       "id": 44
     },
     {
@@ -649,7 +684,7 @@
       "message": "Dispositivo encendido",
       "details": "Robot ahora está encendido",
       "timestamp": "2025-10-08T22:57:07.920Z",
-      "isRead": false,
+      "isRead": true,
       "id": 45
     },
     {
@@ -659,7 +694,7 @@
       "message": "Nuevo dispositivo conectado",
       "details": "Se vinculó un sensor",
       "timestamp": "2025-10-08T22:57:36.752Z",
-      "isRead": false,
+      "isRead": true,
       "id": 46
     },
     {
@@ -669,8 +704,460 @@
       "message": "Dispositivo encendido",
       "details": "Robot ahora está encendido",
       "timestamp": "2025-10-08T22:57:44.886Z",
-      "isRead": false,
+      "isRead": true,
       "id": 47
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-06T20:36:51.721Z",
+      "isRead": false,
+      "id": 48
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Nuevo dispositivo conectado",
+      "details": "Se vinculó un manual",
+      "timestamp": "2025-11-06T20:38:14.490Z",
+      "isRead": false,
+      "id": 49
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-06T20:39:00.234Z",
+      "isRead": false,
+      "id": 50
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-06T20:55:06.697Z",
+      "isRead": false,
+      "id": 51
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Nuevo dispositivo conectado",
+      "details": "Se vinculó un manual",
+      "timestamp": "2025-11-06T20:55:33.890Z",
+      "isRead": false,
+      "id": 52
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-06T20:56:21.967Z",
+      "isRead": false,
+      "id": 53
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Dispositivo apagado",
+      "details": "Enchufe refri ahora está apagado",
+      "timestamp": "2025-11-06T20:56:25.973Z",
+      "isRead": false,
+      "id": 54
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Nuevo dispositivo conectado",
+      "details": "Se vinculó un plug",
+      "timestamp": "2025-11-06T20:56:44.366Z",
+      "isRead": false,
+      "id": 55
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Dispositivo encendido",
+      "details": "Dispositivo 2 ahora está encendido",
+      "timestamp": "2025-11-06T20:56:46.147Z",
+      "isRead": false,
+      "id": 56
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-10T21:05:30.926Z",
+      "isRead": false,
+      "id": 57
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-10T21:43:14.934Z",
+      "isRead": false,
+      "id": 58
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-10T21:43:25.317Z",
+      "isRead": false,
+      "id": 59
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-10T21:45:55.306Z",
+      "isRead": false,
+      "id": 60
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelicoque!",
+      "timestamp": "2025-11-11T09:26:44.696Z",
+      "isRead": true,
+      "id": 61
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T09:54:26.491Z",
+      "isRead": false,
+      "id": 62
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:14:21.615Z",
+      "isRead": false,
+      "id": 63
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:18:31.769Z",
+      "isRead": false,
+      "id": 64
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:23:40.164Z",
+      "isRead": false,
+      "id": 65
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:38:25.608Z",
+      "isRead": false,
+      "id": 66
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:46:11.538Z",
+      "isRead": false,
+      "id": 67
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:46:24.239Z",
+      "isRead": false,
+      "id": 68
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:49:11.611Z",
+      "isRead": false,
+      "id": 69
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:53:25.023Z",
+      "isRead": false,
+      "id": 70
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:53:43.000Z",
+      "isRead": false,
+      "id": 71
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:53:50.396Z",
+      "isRead": false,
+      "id": 72
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T10:57:36.420Z",
+      "isRead": false,
+      "id": 73
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:01:01.815Z",
+      "isRead": false,
+      "id": 74
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:04:02.544Z",
+      "isRead": false,
+      "id": 75
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:05:01.283Z",
+      "isRead": false,
+      "id": 76
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:08:08.200Z",
+      "isRead": false,
+      "id": 77
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:08:26.612Z",
+      "isRead": false,
+      "id": 78
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:12:21.371Z",
+      "isRead": false,
+      "id": 79
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelitoso!",
+      "timestamp": "2025-11-11T11:15:38.884Z",
+      "isRead": false,
+      "id": 80
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angelicoque!",
+      "timestamp": "2025-11-11T11:35:38.393Z",
+      "isRead": true,
+      "id": 81
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-11T17:52:40.531Z",
+      "isRead": false,
+      "id": 82
+    },
+    {
+      "userId": 2,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-11T17:53:52.144Z",
+      "isRead": false,
+      "id": 83
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, albaricoque!",
+      "timestamp": "2025-11-11T17:54:02.477Z",
+      "isRead": false,
+      "id": 84
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-11T18:03:37.520Z",
+      "isRead": false,
+      "id": 85
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-11T18:04:17.817Z",
+      "isRead": false,
+      "id": 86
+    },
+    {
+      "userId": 3,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, albaricoque!",
+      "timestamp": "2025-11-11T20:16:44.652Z",
+      "isRead": false,
+      "id": 87
+    },
+    {
+      "userId": 4,
+      "type": "info",
+      "badge": "Bienvenida",
+      "message": "¡Registro completado exitosamente!",
+      "details": "Bienvenid@ Sofia! Tu plan es: BASIC. Comienza a monitorear tu consumo energético.",
+      "timestamp": "2025-11-11T20:35:25.096Z",
+      "isRead": false,
+      "id": 88
+    },
+    {
+      "userId": 1,
+      "type": "info",
+      "badge": "Info",
+      "message": "Sesión iniciada",
+      "details": "¡Bienvenid@ de vuelta, Angel!",
+      "timestamp": "2025-11-11T20:35:46.950Z",
+      "isRead": false,
+      "id": 89
+    }
+  ],
+  "personalization": [
+    {
+      "id": 1,
+      "userId": 1,
+      "kpiCurrent": true,
+      "kpiCost": true,
+      "kpiMonthly": true,
+      "chartHourly": true,
+      "chartMonthly": true,
+      "chartDevice": true
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "kpiCurrent": true,
+      "kpiCost": true,
+      "kpiMonthly": true,
+      "chartHourly": true,
+      "chartMonthly": false,
+      "chartDevice": true
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "kpiCurrent": true,
+      "kpiCost": true,
+      "kpiMonthly": true,
+      "chartHourly": true,
+      "chartMonthly": false,
+      "chartDevice": true
     }
   ]
 }
