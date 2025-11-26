@@ -1,6 +1,7 @@
 import { http } from '../../../shared/infrastructure/base-api.js';
 import { rewardsEndpoint } from '../../../loyalty/infrastructure/rewards_endpoint.js';
 
+const AUTH = (import.meta.env.VITE_AUTH_ENDPOINT_PATH || '/authentication').replace(/\/+$/, '');
 const USERS = (import.meta.env.VITE_USERS_ENDPOINT_PATH || '/users').replace(/\/+$/, '');
 const CODES = (import.meta.env.VITE_CODES_ENDPOINT_PATH || '/codes').replace(/\/+$/, '');
 const CODES_CHECK = (import.meta.env.VITE_CODES_CHECK_PATH || '/codes').replace(/\/+$/, '');
@@ -65,15 +66,6 @@ export const AuthApi = {
     },
 
     async login({ email, password }) {
-        const list = await http.get(`${USERS}?email=${encodeURIComponent(email)}`);
-        if (!list.length) throw { message: 'Usuario no encontrado. Regístrate primero.' };
-
-        const user = list[0];
-        // ✅ Validar contraseña
-        if (user.password !== password) {
-            throw { message: 'Contraseña incorrecta.' };
-        }
-
-        return { user, token: 'dev-token' };
+        return await http.post(`${AUTH}/sign-in`, { email, password });
     }
 };
