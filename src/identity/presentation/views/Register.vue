@@ -6,18 +6,6 @@
           {{ generalError }}
         </div>
 
-        <CodeInput
-          v-model="formData.code"
-          :label="MESSAGES.codeLabel"
-          :placeholder="MESSAGES.codePlaceholder"
-          :error="errors.code"
-          :disabled="submitLoading"
-          :loading="codeLoading"
-          :is-valid="codeValid"
-          @validate="handleValidateCode"
-          @update:modelValue="handleCodeChange"
-        />
-
         <AuthField
           v-model="formData.name"
           :label="MESSAGES.nameLabel"
@@ -111,25 +99,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AuthCard from '../components/AuthCard.vue'
 import AuthField from '../components/AuthField.vue'
 import PasswordField from '../components/PasswordField.vue'
-import CodeInput from '../components/CodeInput.vue'
-import { validateCodeService, registerService } from '@/identity/domain/auth/auth.service.js'
+import { registerService } from '@/identity/domain/auth/auth.service.js'
 import { isValidEmail, isRequired, isValidPassword, passwordsMatch, isValidDNI } from '@/identity/application/utils/validators.js'
 import { useAsyncAction } from '@/identity/application/composables/useAsyncAction.js'
 import { useFocusManagement } from '@/identity/application/composables/useFocusManagement.js'
 
 const router = useRouter()
-const route = useRoute()
 
 const MESSAGES = {
   title: 'Registro en Energix',
   subtitle: 'Complete sus datos para crear una cuenta',
-  codeLabel: 'Código',
-  codePlaceholder: 'Ingrese su código de registro o código de referido (ENX-XXXXXX)',
   nameLabel: 'Nombre',
   namePlaceholder: 'Ingrese su nombre',
   lastNameLabel: 'Apellido',
@@ -149,8 +133,6 @@ const MESSAGES = {
   hasAccount: '¿Ya tiene una cuenta?',
   loginLink: 'Inicie sesión aquí',
   errors: {
-    codeRequired: 'El código es requerido',
-    codeValidate: 'Debe validar su código antes de registrarse',
     nameRequired: 'El nombre es requerido',
     lastNameRequired: 'El apellido es requerido',
     emailRequired: 'El correo electrónico es requerido',
@@ -166,7 +148,6 @@ const MESSAGES = {
 }
 
 const formData = ref({
-  code: '',
   name: '',
   lastName: '',
   email: '',
@@ -177,7 +158,6 @@ const formData = ref({
 })
 
 const errors = ref({
-  code: '',
   name: '',
   lastName: '',
   email: '',
@@ -188,47 +168,9 @@ const errors = ref({
 })
 
 const generalError = ref('')
-const codeValid = ref(false)
 
-const { loading: codeLoading, execute: executeCodeValidation } = useAsyncAction()
 const { loading: submitLoading, execute: executeSubmit } = useAsyncAction()
 const { focusFirstError } = useFocusManagement()
-
-const canSubmit = computed(() =>
-    !submitLoading.value && (formData.value.code ? codeValid.value : true)
-)
-
-// Detectar código de referido desde la URL
-onMounted(() => {
-  const refCode = route.query.ref
-  if (refCode) {
-    formData.value.code = refCode
-    // Auto-validar el código si viene de la URL
-    handleValidateCode()
-  }
-})
-
-const handleCodeChange = () => {
-  codeValid.value = false
-  errors.value.code = ''
-}
-
-const handleValidateCode = async () => {
-  errors.value.code = ''
-  if (!formData.value.code) {
-    errors.value.code = MESSAGES.errors.codeRequired
-    return
-  }
-  try {
-    await executeCodeValidation(async () => {
-      await validateCodeService(formData.value.code)
-      codeValid.value = true
-    })
-  } catch (error) {
-    codeValid.value = false
-    errors.value.code = error.network ? error.message : (error.message || MESSAGES.errors.codeRequired)
-  }
-}
 
 const validateField = (fieldName) => {
   errors.value[fieldName] = ''
@@ -275,12 +217,6 @@ const validateAllFields = () => {
 const handleSubmit = async () => {
   generalError.value = ''
 
-  // Solo exigimos validación si el usuario ingresó un código
-  if (formData.value.code && !codeValid.value) {
-    generalError.value = MESSAGES.errors.codeValidate
-    return
-  }
-
   // Validaciones de campos
   const isValid = validateAllFields()
   if (!isValid) {
@@ -291,7 +227,6 @@ const handleSubmit = async () => {
   try {
     await executeSubmit(async () => {
       const payload = {
-        code: formData.value.code || '',   // vacío => plan basic en el backend
         name: formData.value.name,
         lastName: formData.value.lastName,
         email: formData.value.email,

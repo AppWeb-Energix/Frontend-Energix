@@ -4,10 +4,6 @@ import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js';
 export function setAuthenticated(v = true){ localStorage.setItem('isAuthenticated', String(v)); }
 export function isAuthenticated(){ return localStorage.getItem('isAuthenticated') === 'true'; }
 
-export async function validateCodeService(code){
-    return AuthApi.validateCode(code);
-}
-
 export async function registerService(payload){
     const { user, token } = await AuthApi.register(payload);
     localStorage.setItem('token', token || 'dev-token');
