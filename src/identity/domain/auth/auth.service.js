@@ -31,21 +31,26 @@ export async function registerService(payload){
 
 export async function loginService({ email, password }){
     const { user, token } = await AuthApi.login({ email, password });
-    localStorage.setItem('token', token || 'dev-token');
+    localStorage.setItem('token', token);
     localStorage.setItem('energix-user', JSON.stringify(user));
-    localStorage.setItem('energix-plan', user.plan);
+    // Fija plan por defecto hasta que el backend entregue el plan real
+    localStorage.setItem('energix-plan', user.plan || 'student');
     setAuthenticated(true);
 
-    // 🔥 CREAR ALERTA DE LOGIN AUTOMÁTICAMENTE
-    await AlertsApi.create({
-        userId: user.id,
-        type: 'info',
-        badge: 'Info',
-        message: 'Sesión iniciada',
-        details: `¡Bienvenid@ de vuelta, ${user.name}!`,
-        timestamp: new Date().toISOString(),
-        isRead: false
-    });
+    // 🔥 CREAR ALERTA DE LOGIN (opcional, puede fallar si el backend no expone /alerts)
+    try {
+        await AlertsApi.create({
+            userId: user.id,
+            type: 'info',
+            badge: 'Info',
+            message: 'Sesión iniciada',
+            details: `¡Bienvenid@ de vuelta, ${user.name}!`,
+            timestamp: new Date().toISOString(),
+            isRead: false
+        });
+    } catch (error) {
+        console.warn('No se pudo crear alerta de login:', error);
+    }
 
     return user;
 }
