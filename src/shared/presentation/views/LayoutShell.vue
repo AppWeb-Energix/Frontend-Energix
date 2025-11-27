@@ -37,20 +37,19 @@ import Menu from 'primevue/menu'
 import Button from 'primevue/button'
 import Avatar from 'primevue/avatar'
 import LanguageSwitcher from '@/shared/presentation/components/language-switcher.vue'
-import { logout } from '@/identity/application/utils/mockAuth.js'
 import { usePersonalizationStore } from '@/personalization/application/personalization.js'
 import { useAuth } from '@/identity/application/composables/useAuth.js'
-import { useDateTime } from '@/identity/application/composables/useDateTime.js'
+import { useDateTime } from '@/shared/presentation/composables/useDateTime.js'
 
 const router = useRouter()
 const personalizationStore = usePersonalizationStore()
-const { userId, userName } = useAuth()
+const { userId, userName, logout } = useAuth()
 const { day, date, month, hour } = useDateTime();
 const { t } = useI18n()
 
 
 function handleLogout() {
-  // Solo limpiar el store local, NO guardar defaults en db.json
+  // Solo limpiar el store local
   personalizationStore.clearStore()
   logout()
   router.push({ name: 'login' })
