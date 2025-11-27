@@ -1,27 +1,33 @@
 import { http } from '../../../shared/infrastructure/base-api.js';
 
-const AUTH = (import.meta.env.VITE_AUTH_ENDPOINT_PATH || '/authentication').replace(/\/+$/, '');
-const USERS = (import.meta.env.VITE_USERS_ENDPOINT_PATH || '/users').replace(/\/+$/, '');
+const SESSION = '/session';
 
 export const AuthApi = {
     async register({ name, lastName, email, password, dni, district }) {
-        const dup = await http.get(`${USERS}?email=${encodeURIComponent(email)}`);
-        if (dup.length) throw { message: 'Ya existe un usuario con este correo' };
+        // Transformar payload del frontend al DTO que espera el backend
+        const signUpRequest = {
+            FirstName: name,
+            LastName: lastName,
+            Email: email,
+            Password: password,
+            Dni: dni,
+            District: district
+        };
 
-        const user = await http.post(USERS, {
-            name,
-            lastName,
-            email,
-            password,
-            dni,
-            district,
-            plan: 'basic' // Plan por defecto para todos los usuarios
-        });
+        // Llamar a POST /session/sign-up
+        // La respuesta del backend es { token, user, plan }
+        const response = await http.post(`${SESSION}/sign-up`, signUpRequest);
 
-        return { user, token: 'dev-token' };
+        // Devolver exactamente lo que el backend retorna
+        return response;
     },
 
     async login({ email, password }) {
-        return await http.post(`${AUTH}/sign-in`, { email, password });
+        // Llamar a POST /session/sign-in
+        // La respuesta del backend es { token, user, plan }
+        const response = await http.post(`${SESSION}/sign-in`, { email, password });
+
+        // Devolver exactamente lo que el backend retorna
+        return response;
     }
 };

@@ -80,7 +80,7 @@
         <button
           type="submit"
           :class="['auth-button', { 'auth-button--loading': submitLoading }]"
-          :disabled="submitLoading || !canSubmit"
+          :disabled="submitLoading"
           :aria-busy="submitLoading"
         >
           <span v-if="!submitLoading">{{ MESSAGES.registerButton }}</span>

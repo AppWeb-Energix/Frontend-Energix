@@ -7,10 +7,18 @@ export function usePlan() {
     // Obtener plan del usuario desde localStorage
     const loadUserPlan = () => {
         try {
+            // Leer plan directamente de energix-plan (fuente de verdad)
+            const storedPlan = localStorage.getItem('energix-plan');
+            if (storedPlan) {
+                currentPlan.value = storedPlan;
+            } else {
+                currentPlan.value = 'basic';
+            }
+
+            // Cargar datos del usuario (opcional, para otras referencias)
             const userData = localStorage.getItem('energix-user');
             if (userData) {
                 user.value = JSON.parse(userData);
-                currentPlan.value = user.value.plan || 'basic';
             }
         } catch (error) {
             console.error('Error al cargar plan:', error);

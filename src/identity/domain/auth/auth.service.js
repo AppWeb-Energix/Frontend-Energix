@@ -1,52 +1,30 @@
 import { AuthApi } from '@/identity/infrastructure/endpoint/auth.endpoint.js';
-import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js';
 
 export function setAuthenticated(v = true){ localStorage.setItem('isAuthenticated', String(v)); }
 export function isAuthenticated(){ return localStorage.getItem('isAuthenticated') === 'true'; }
 
 export async function registerService(payload){
-    const { user, token } = await AuthApi.register(payload);
-    localStorage.setItem('token', token || 'dev-token');
-    localStorage.setItem('energix-user', JSON.stringify(user));
-    localStorage.setItem('energix-plan', user.plan);
-    setAuthenticated(true);
+    // Desestructurar el contrato del backend real: { token, user, plan }
+    const { token, user, plan } = await AuthApi.register(payload);
 
-    // 🔥 CREAR ALERTA DE BIENVENIDA AUTOMÁTICAMENTE
-    await AlertsApi.create({
-        userId: user.id,
-        type: 'info',
-        badge: 'Bienvenida',
-        message: '¡Registro completado exitosamente!',
-        details: `Bienvenid@ ${user.name}! Tu plan es: ${user.plan.toUpperCase()}. Comienza a monitorear tu consumo energético.`,
-        timestamp: new Date().toISOString(),
-        isRead: false
-    });
+    // Guardar en localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('energix-user', JSON.stringify(user));
+    localStorage.setItem('energix-plan', plan?.uiKey || 'basic');
+    setAuthenticated(true);
 
     return user;
 }
 
 export async function loginService({ email, password }){
-    const { user, token } = await AuthApi.login({ email, password });
+    // Desestructurar el contrato del backend real: { token, user, plan }
+    const { token, user, plan } = await AuthApi.login({ email, password });
+
+    // Guardar en localStorage
     localStorage.setItem('token', token);
     localStorage.setItem('energix-user', JSON.stringify(user));
-    // Fija plan por defecto hasta que el backend entregue el plan real
-    localStorage.setItem('energix-plan', user.plan || 'student');
+    localStorage.setItem('energix-plan', plan?.uiKey || 'basic');
     setAuthenticated(true);
-
-    // 🔥 CREAR ALERTA DE LOGIN (opcional, puede fallar si el backend no expone /alerts)
-    try {
-        await AlertsApi.create({
-            userId: user.id,
-            type: 'info',
-            badge: 'Info',
-            message: 'Sesión iniciada',
-            details: `¡Bienvenid@ de vuelta, ${user.name}!`,
-            timestamp: new Date().toISOString(),
-            isRead: false
-        });
-    } catch (error) {
-        console.warn('No se pudo crear alerta de login:', error);
-    }
 
     return user;
 }
@@ -54,24 +32,4 @@ export async function loginService({ email, password }){
 export function logoutService(){
     ['token','energix-user','energix-plan'].forEach(k => localStorage.removeItem(k));
     setAuthenticated(false);
-}
-
-/**
- * Cambia la contraseña del usuario autenticado
- * @param {number|string} userId
- * @param {string} currentPassword
- * @param {string} newPassword
- * @returns {Promise<void>}
- */
-export async function changePasswordService(userId, currentPassword, newPassword) {
-    const response = await fetch(`/api/v1/users/${userId}/password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword })
-    });
-    if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Error al actualizar la contraseña');
-    }
-    return;
 }
