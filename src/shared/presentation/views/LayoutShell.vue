@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Menu from 'primevue/menu'
@@ -48,6 +49,16 @@ const { userId, userName } = useAuth()
 const { day, date, month, hour } = useDateTime();
 const { t } = useI18n()
 
+// Verificar si el usuario es Admin
+const isAdmin = computed(() => {
+  try {
+    const userStr = localStorage.getItem('energix-user')
+    const user = userStr ? JSON.parse(userStr) : null
+    return user?.role === 'Admin'
+  } catch {
+    return false
+  }
+})
 
 function handleLogout() {
   // Solo limpiar el store local, NO guardar defaults en db.json
@@ -56,14 +67,28 @@ function handleLogout() {
   router.push({ name: 'login' })
 }
 
-const items = [
-  { label: t('nav.dashboard'), icon: 'pi pi-objects-column', command: () => router.push({ name: 'dashboard' }) },
-  { label: t('nav.alerts'), icon: 'pi pi-bell', command: () => router.push({ name: 'alerts' }) },
-  { label: t('nav.devices'), icon: 'pi pi-clipboard', command: () => router.push({ name: 'devices' }) },
-  { label: t('nav.subscriptions'), icon: 'pi pi-credit-card', command: () => router.push({ name: 'subscriptions' }) },
-  { label: t('nav.rewards'), icon: 'pi pi-gift', command: () => router.push({ name: 'rewards' }) },
-  { label: t('nav.configuration'), icon: 'pi pi-cog', command: () => router.push('/configuration') }
-]
+// Menú dinámico basado en el rol del usuario
+const items = computed(() => {
+  const baseItems = [
+    { label: t('nav.dashboard'), icon: 'pi pi-objects-column', command: () => router.push({ name: 'dashboard' }) },
+    { label: t('nav.alerts'), icon: 'pi pi-bell', command: () => router.push({ name: 'alerts' }) },
+    { label: t('nav.devices'), icon: 'pi pi-clipboard', command: () => router.push({ name: 'devices' }) },
+    { label: t('nav.subscriptions'), icon: 'pi pi-credit-card', command: () => router.push({ name: 'subscriptions' }) },
+    { label: t('nav.rewards'), icon: 'pi pi-gift', command: () => router.push({ name: 'rewards' }) },
+    { label: t('nav.configuration'), icon: 'pi pi-cog', command: () => router.push('/configuration') }
+  ]
+
+  // Si es Admin, agregar el enlace al panel de administración
+  if (isAdmin.value) {
+    baseItems.push({
+      label: 'Admin Panel',
+      icon: 'pi pi-shield',
+      command: () => router.push({ name: 'admin' })
+    })
+  }
+
+  return baseItems
+})
 
 const menuPt = {
   root: { class: 'my-menu-root' },

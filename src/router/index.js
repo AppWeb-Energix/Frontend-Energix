@@ -128,6 +128,12 @@ export const router = createRouter({
             component: () => import('@/device/presentation/views/devices.vue'),
             meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: AdminDashboard,
+            meta: { title: 'Admin', requiresAuth: true, role: 'Admin' }
+        },
         // Redirección dinámica para configuración según el plan
         {
             path: '/configuration',
@@ -179,6 +185,22 @@ router.beforeEach((to, from, next) => {
         // CORRECCIÓN: Usamos el nombre de ruta genérico 'dashboard'
         // que ya tiene el redirect configurado para ir al plan correcto.
         return next({ name: 'dashboard' })
+    }
+
+    // Verificar rol de administrador para rutas protegidas
+    if (to.meta?.role === 'Admin') {
+        try {
+            const userStr = localStorage.getItem('energix-user')
+            const user = userStr ? JSON.parse(userStr) : null
+
+            if (!user || user.role !== 'Admin') {
+                // Si no es admin, redirigir al dashboard normal
+                return next({ name: 'dashboard' })
+            }
+        } catch (e) {
+            console.error('Error al verificar rol de usuario:', e)
+            return next({ name: 'dashboard' })
+        }
     }
 
     next()
