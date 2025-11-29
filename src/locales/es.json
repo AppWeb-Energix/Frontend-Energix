@@ -11,6 +11,24 @@
   "header": {
     "greeting": "Hola"
   },
+  "planSelection": {
+    "title": "Elige tu Plan",
+    "subtitle": "Selecciona el plan que mejor se adapte a tus necesidades",
+    "free": "Gratis",
+    "popular": "Popular",
+    "month": "mes",
+    "continueBasic": "Continuar con Plan Básico",
+    "continuePayment": "Continuar al Pago",
+    "skip": "Omitir por ahora (Plan Básico)"
+  },
+  "paymentSetup": {
+    "title": "Configurar Método de Pago",
+    "selectedPlan": "Plan seleccionado",
+    "total": "Total a pagar hoy",
+    "confirmPayment": "Confirmar Pago",
+    "continueBasic": "Continuar con Plan Básico",
+    "error": "Error al procesar el pago"
+  },
   "dashboard": {
     "title": "Resumen general",
     "kpi": {

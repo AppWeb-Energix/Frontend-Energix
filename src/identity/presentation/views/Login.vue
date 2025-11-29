@@ -2,40 +2,18 @@
   <div class="auth-page">
     <AuthCard :title="MESSAGES.title">
       <form class="auth-form" @submit.prevent="handleSubmit">
-        <div
-          v-if="generalError"
-          class="auth-error-message"
-          role="alert"
-          aria-live="polite"
-        >
+        <div v-if="generalError" class="auth-error-message" role="alert" aria-live="polite">
           {{ generalError }}
         </div>
 
-        <AuthField
-          v-model="email"
-          :label="MESSAGES.emailLabel"
-          type="email"
-          :placeholder="MESSAGES.emailPlaceholder"
-          :error="emailError"
-          :disabled="loading"
-          @blur="validateEmail"
-        />
+        <AuthField v-model="email" :label="MESSAGES.emailLabel" type="email" :placeholder="MESSAGES.emailPlaceholder"
+          :error="emailError" :disabled="loading" @blur="validateEmail" />
 
-        <PasswordField
-          v-model="password"
-          :label="MESSAGES.passwordLabel"
-          :placeholder="MESSAGES.passwordPlaceholder"
-          :error="passwordError"
-          :disabled="loading"
-          @blur="validatePassword"
-        />
+        <PasswordField v-model="password" :label="MESSAGES.passwordLabel" :placeholder="MESSAGES.passwordPlaceholder"
+          :error="passwordError" :disabled="loading" @blur="validatePassword" />
 
-        <button
-          type="submit"
-          :class="['auth-button', { 'auth-button--loading': loading }]"
-          :disabled="loading"
-          :aria-busy="loading"
-        >
+        <button type="submit" :class="['auth-button', { 'auth-button--loading': loading }]" :disabled="loading"
+          :aria-busy="loading">
           <span v-if="!loading">{{ MESSAGES.loginButton }}</span>
           <div v-if="loading" class="auth-button__spinner"></div>
         </button>
@@ -128,12 +106,16 @@ const handleSubmit = async () => {
 
   try {
     await execute(async () => {
-      const user = await loginService({ email: email.value, password: password.value })
+      const { user, planSelectionPending } = await loginService({ email: email.value, password: password.value })
       personalizationStore.loadPersonalization() // Carga la personalización del usuario que acaba de iniciar sesión
       personalizationStore.savePersonalization() // Guarda la personalización del usuario al iniciar sesión
-      await router.replace({
-        name: 'dashboard'
-      })
+
+      // Redirigir según el estado de selección de plan
+      if (planSelectionPending) {
+        await router.replace({ name: 'plan-selection' })
+      } else {
+        await router.replace({ name: 'dashboard' })
+      }
       return user
     })
   } catch (error) {

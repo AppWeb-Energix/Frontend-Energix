@@ -71,7 +71,7 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
-import { changePasswordService } from '@/identity/domain/auth/auth.service.js'
+//import { changePasswordService } from '@/identity/domain/auth/auth.service.js'
 
 function getUserId() {
   try {
@@ -164,6 +164,7 @@ const handleFileUpload = (event) => {
 }
 
 // Función para seguridad
+/*
 const updatePassword = async () => {
   if (security.newPassword !== security.confirmPassword) {
     alert('Las contraseñas no coinciden')
@@ -180,6 +181,7 @@ const updatePassword = async () => {
     alert(err.message || 'Error al actualizar la contraseña')
   }
 }
+*/
 </script>
 
 <style scoped>
