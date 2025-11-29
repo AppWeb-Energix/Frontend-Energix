@@ -6,95 +6,35 @@
           {{ generalError }}
         </div>
 
-        <CodeInput
-          v-model="formData.code"
-          :label="MESSAGES.codeLabel"
-          :placeholder="MESSAGES.codePlaceholder"
-          :error="errors.code"
-          :disabled="submitLoading"
-          :loading="codeLoading"
-          :is-valid="codeValid"
-          @validate="handleValidateCode"
-          @update:modelValue="handleCodeChange"
-        />
+        <AuthField v-model="formData.name" :label="MESSAGES.nameLabel" type="text"
+          :placeholder="MESSAGES.namePlaceholder" :error="errors.name" :disabled="submitLoading"
+          @blur="validateField('name')" />
 
-        <AuthField
-          v-model="formData.name"
-          :label="MESSAGES.nameLabel"
-          type="text"
-          :placeholder="MESSAGES.namePlaceholder"
-          :error="errors.name"
-          :disabled="submitLoading"
-          @blur="validateField('name')"
-        />
+        <AuthField v-model="formData.lastName" :label="MESSAGES.lastNameLabel" type="text"
+          :placeholder="MESSAGES.lastNamePlaceholder" :error="errors.lastName" :disabled="submitLoading"
+          @blur="validateField('lastName')" />
 
-        <AuthField
-          v-model="formData.lastName"
-          :label="MESSAGES.lastNameLabel"
-          type="text"
-          :placeholder="MESSAGES.lastNamePlaceholder"
-          :error="errors.lastName"
-          :disabled="submitLoading"
-          @blur="validateField('lastName')"
-        />
+        <AuthField v-model="formData.email" :label="MESSAGES.emailLabel" type="email"
+          :placeholder="MESSAGES.emailPlaceholder" :error="errors.email" :disabled="submitLoading"
+          @blur="validateField('email')" />
 
-        <AuthField
-          v-model="formData.email"
-          :label="MESSAGES.emailLabel"
-          type="email"
-          :placeholder="MESSAGES.emailPlaceholder"
-          :error="errors.email"
-          :disabled="submitLoading"
-          @blur="validateField('email')"
-        />
+        <PasswordField v-model="formData.password" :label="MESSAGES.passwordLabel"
+          :placeholder="MESSAGES.passwordPlaceholder" :error="errors.password" :disabled="submitLoading"
+          :show-hint="true" :hint="MESSAGES.passwordHint" @blur="validateField('password')" />
 
-        <PasswordField
-          v-model="formData.password"
-          :label="MESSAGES.passwordLabel"
-          :placeholder="MESSAGES.passwordPlaceholder"
-          :error="errors.password"
-          :disabled="submitLoading"
-          :show-hint="true"
-          :hint="MESSAGES.passwordHint"
-          @blur="validateField('password')"
-        />
+        <PasswordField v-model="formData.confirmPassword" :label="MESSAGES.confirmPasswordLabel"
+          :placeholder="MESSAGES.confirmPasswordPlaceholder" :error="errors.confirmPassword" :disabled="submitLoading"
+          :show-hint="false" @blur="validateField('confirmPassword')" />
 
-        <PasswordField
-          v-model="formData.confirmPassword"
-          :label="MESSAGES.confirmPasswordLabel"
-          :placeholder="MESSAGES.confirmPasswordPlaceholder"
-          :error="errors.confirmPassword"
-          :disabled="submitLoading"
-          :show-hint="false"
-          @blur="validateField('confirmPassword')"
-        />
+        <AuthField v-model="formData.dni" :label="MESSAGES.dniLabel" type="text" :placeholder="MESSAGES.dniPlaceholder"
+          :error="errors.dni" :disabled="submitLoading" @blur="validateField('dni')" />
 
-        <AuthField
-          v-model="formData.dni"
-          :label="MESSAGES.dniLabel"
-          type="text"
-          :placeholder="MESSAGES.dniPlaceholder"
-          :error="errors.dni"
-          :disabled="submitLoading"
-          @blur="validateField('dni')"
-        />
+        <AuthField v-model="formData.district" :label="MESSAGES.districtLabel" type="text"
+          :placeholder="MESSAGES.districtPlaceholder" :error="errors.district" :disabled="submitLoading"
+          @blur="validateField('district')" />
 
-        <AuthField
-          v-model="formData.district"
-          :label="MESSAGES.districtLabel"
-          type="text"
-          :placeholder="MESSAGES.districtPlaceholder"
-          :error="errors.district"
-          :disabled="submitLoading"
-          @blur="validateField('district')"
-        />
-
-        <button
-          type="submit"
-          :class="['auth-button', { 'auth-button--loading': submitLoading }]"
-          :disabled="submitLoading || !canSubmit"
-          :aria-busy="submitLoading"
-        >
+        <button type="submit" :class="['auth-button', { 'auth-button--loading': submitLoading }]"
+          :disabled="submitLoading" :aria-busy="submitLoading">
           <span v-if="!submitLoading">{{ MESSAGES.registerButton }}</span>
           <div v-if="submitLoading" class="auth-button__spinner"></div>
         </button>
@@ -111,25 +51,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AuthCard from '../components/AuthCard.vue'
 import AuthField from '../components/AuthField.vue'
 import PasswordField from '../components/PasswordField.vue'
-import CodeInput from '../components/CodeInput.vue'
-import { validateCodeService, registerService } from '@/identity/domain/auth/auth.service.js'
+import { registerService } from '@/identity/domain/auth/auth.service.js'
 import { isValidEmail, isRequired, isValidPassword, passwordsMatch, isValidDNI } from '@/identity/application/utils/validators.js'
 import { useAsyncAction } from '@/identity/application/composables/useAsyncAction.js'
 import { useFocusManagement } from '@/identity/application/composables/useFocusManagement.js'
 
 const router = useRouter()
-const route = useRoute()
 
 const MESSAGES = {
   title: 'Registro en Energix',
   subtitle: 'Complete sus datos para crear una cuenta',
-  codeLabel: 'Código',
-  codePlaceholder: 'Ingrese su código de registro o código de referido (ENX-XXXXXX)',
   nameLabel: 'Nombre',
   namePlaceholder: 'Ingrese su nombre',
   lastNameLabel: 'Apellido',
@@ -149,8 +85,6 @@ const MESSAGES = {
   hasAccount: '¿Ya tiene una cuenta?',
   loginLink: 'Inicie sesión aquí',
   errors: {
-    codeRequired: 'El código es requerido',
-    codeValidate: 'Debe validar su código antes de registrarse',
     nameRequired: 'El nombre es requerido',
     lastNameRequired: 'El apellido es requerido',
     emailRequired: 'El correo electrónico es requerido',
@@ -166,7 +100,6 @@ const MESSAGES = {
 }
 
 const formData = ref({
-  code: '',
   name: '',
   lastName: '',
   email: '',
@@ -177,7 +110,6 @@ const formData = ref({
 })
 
 const errors = ref({
-  code: '',
   name: '',
   lastName: '',
   email: '',
@@ -188,47 +120,9 @@ const errors = ref({
 })
 
 const generalError = ref('')
-const codeValid = ref(false)
 
-const { loading: codeLoading, execute: executeCodeValidation } = useAsyncAction()
 const { loading: submitLoading, execute: executeSubmit } = useAsyncAction()
 const { focusFirstError } = useFocusManagement()
-
-const canSubmit = computed(() =>
-    !submitLoading.value && (formData.value.code ? codeValid.value : true)
-)
-
-// Detectar código de referido desde la URL
-onMounted(() => {
-  const refCode = route.query.ref
-  if (refCode) {
-    formData.value.code = refCode
-    // Auto-validar el código si viene de la URL
-    handleValidateCode()
-  }
-})
-
-const handleCodeChange = () => {
-  codeValid.value = false
-  errors.value.code = ''
-}
-
-const handleValidateCode = async () => {
-  errors.value.code = ''
-  if (!formData.value.code) {
-    errors.value.code = MESSAGES.errors.codeRequired
-    return
-  }
-  try {
-    await executeCodeValidation(async () => {
-      await validateCodeService(formData.value.code)
-      codeValid.value = true
-    })
-  } catch (error) {
-    codeValid.value = false
-    errors.value.code = error.network ? error.message : (error.message || MESSAGES.errors.codeRequired)
-  }
-}
 
 const validateField = (fieldName) => {
   errors.value[fieldName] = ''
@@ -275,12 +169,6 @@ const validateAllFields = () => {
 const handleSubmit = async () => {
   generalError.value = ''
 
-  // Solo exigimos validación si el usuario ingresó un código
-  if (formData.value.code && !codeValid.value) {
-    generalError.value = MESSAGES.errors.codeValidate
-    return
-  }
-
   // Validaciones de campos
   const isValid = validateAllFields()
   if (!isValid) {
@@ -291,7 +179,6 @@ const handleSubmit = async () => {
   try {
     await executeSubmit(async () => {
       const payload = {
-        code: formData.value.code || '',   // vacío => plan basic en el backend
         name: formData.value.name,
         lastName: formData.value.lastName,
         email: formData.value.email,
@@ -300,8 +187,14 @@ const handleSubmit = async () => {
         district: formData.value.district
       }
 
-      await registerService(payload)
-      await router.push({ name: 'dashboard' })
+      const { planSelectionPending } = await registerService(payload)
+
+      // Redirigir según el estado de selección de plan
+      if (planSelectionPending) {
+        await router.push({ name: 'plan-selection' })
+      } else {
+        await router.push({ name: 'dashboard' })
+      }
     })
   } catch (error) {
     if (error.field) {

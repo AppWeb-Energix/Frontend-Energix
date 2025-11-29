@@ -20,15 +20,16 @@ import InputIcon from 'primevue/inputicon'
 
 import { DevicesApi } from '@/device/infrastructure/devices.endpoint.js'
 import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js'
-import { getCurrentUser, getPlan } from '@/identity/domain/auth/plan.util.js'
+import { useAuth } from '@/identity/application/composables/useAuth.js'
 
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const { currentUser, userPlan, getCurrentUser } = useAuth()
 
 // ===== estado base =====
-const user  = ref(getCurrentUser())
-const plan  = ref(getPlan()) // 'basic' | 'student' | 'family'
+const user  = currentUser
+const plan  = userPlan // 'basic' | 'student' | 'family'
 const devices = ref([])
 const loading = ref(false)
 
@@ -138,7 +139,10 @@ async function load(){
     await loadZones()
   } finally { loading.value = false }
 }
-onMounted(load)
+onMounted(() => {
+  getCurrentUser()
+  load()
+})
 
 // ===== tabla =====
 const tableData = computed(() =>
