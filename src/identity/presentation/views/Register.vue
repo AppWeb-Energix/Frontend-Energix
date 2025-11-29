@@ -6,83 +6,35 @@
           {{ generalError }}
         </div>
 
-        <AuthField
-          v-model="formData.name"
-          :label="MESSAGES.nameLabel"
-          type="text"
-          :placeholder="MESSAGES.namePlaceholder"
-          :error="errors.name"
-          :disabled="submitLoading"
-          @blur="validateField('name')"
-        />
+        <AuthField v-model="formData.name" :label="MESSAGES.nameLabel" type="text"
+          :placeholder="MESSAGES.namePlaceholder" :error="errors.name" :disabled="submitLoading"
+          @blur="validateField('name')" />
 
-        <AuthField
-          v-model="formData.lastName"
-          :label="MESSAGES.lastNameLabel"
-          type="text"
-          :placeholder="MESSAGES.lastNamePlaceholder"
-          :error="errors.lastName"
-          :disabled="submitLoading"
-          @blur="validateField('lastName')"
-        />
+        <AuthField v-model="formData.lastName" :label="MESSAGES.lastNameLabel" type="text"
+          :placeholder="MESSAGES.lastNamePlaceholder" :error="errors.lastName" :disabled="submitLoading"
+          @blur="validateField('lastName')" />
 
-        <AuthField
-          v-model="formData.email"
-          :label="MESSAGES.emailLabel"
-          type="email"
-          :placeholder="MESSAGES.emailPlaceholder"
-          :error="errors.email"
-          :disabled="submitLoading"
-          @blur="validateField('email')"
-        />
+        <AuthField v-model="formData.email" :label="MESSAGES.emailLabel" type="email"
+          :placeholder="MESSAGES.emailPlaceholder" :error="errors.email" :disabled="submitLoading"
+          @blur="validateField('email')" />
 
-        <PasswordField
-          v-model="formData.password"
-          :label="MESSAGES.passwordLabel"
-          :placeholder="MESSAGES.passwordPlaceholder"
-          :error="errors.password"
-          :disabled="submitLoading"
-          :show-hint="true"
-          :hint="MESSAGES.passwordHint"
-          @blur="validateField('password')"
-        />
+        <PasswordField v-model="formData.password" :label="MESSAGES.passwordLabel"
+          :placeholder="MESSAGES.passwordPlaceholder" :error="errors.password" :disabled="submitLoading"
+          :show-hint="true" :hint="MESSAGES.passwordHint" @blur="validateField('password')" />
 
-        <PasswordField
-          v-model="formData.confirmPassword"
-          :label="MESSAGES.confirmPasswordLabel"
-          :placeholder="MESSAGES.confirmPasswordPlaceholder"
-          :error="errors.confirmPassword"
-          :disabled="submitLoading"
-          :show-hint="false"
-          @blur="validateField('confirmPassword')"
-        />
+        <PasswordField v-model="formData.confirmPassword" :label="MESSAGES.confirmPasswordLabel"
+          :placeholder="MESSAGES.confirmPasswordPlaceholder" :error="errors.confirmPassword" :disabled="submitLoading"
+          :show-hint="false" @blur="validateField('confirmPassword')" />
 
-        <AuthField
-          v-model="formData.dni"
-          :label="MESSAGES.dniLabel"
-          type="text"
-          :placeholder="MESSAGES.dniPlaceholder"
-          :error="errors.dni"
-          :disabled="submitLoading"
-          @blur="validateField('dni')"
-        />
+        <AuthField v-model="formData.dni" :label="MESSAGES.dniLabel" type="text" :placeholder="MESSAGES.dniPlaceholder"
+          :error="errors.dni" :disabled="submitLoading" @blur="validateField('dni')" />
 
-        <AuthField
-          v-model="formData.district"
-          :label="MESSAGES.districtLabel"
-          type="text"
-          :placeholder="MESSAGES.districtPlaceholder"
-          :error="errors.district"
-          :disabled="submitLoading"
-          @blur="validateField('district')"
-        />
+        <AuthField v-model="formData.district" :label="MESSAGES.districtLabel" type="text"
+          :placeholder="MESSAGES.districtPlaceholder" :error="errors.district" :disabled="submitLoading"
+          @blur="validateField('district')" />
 
-        <button
-          type="submit"
-          :class="['auth-button', { 'auth-button--loading': submitLoading }]"
-          :disabled="submitLoading"
-          :aria-busy="submitLoading"
-        >
+        <button type="submit" :class="['auth-button', { 'auth-button--loading': submitLoading }]"
+          :disabled="submitLoading" :aria-busy="submitLoading">
           <span v-if="!submitLoading">{{ MESSAGES.registerButton }}</span>
           <div v-if="submitLoading" class="auth-button__spinner"></div>
         </button>
@@ -235,8 +187,14 @@ const handleSubmit = async () => {
         district: formData.value.district
       }
 
-      await registerService(payload)
-      await router.push({ name: 'dashboard' })
+      const { planSelectionPending } = await registerService(payload)
+
+      // Redirigir según el estado de selección de plan
+      if (planSelectionPending) {
+        await router.push({ name: 'plan-selection' })
+      } else {
+        await router.push({ name: 'dashboard' })
+      }
     })
   } catch (error) {
     if (error.field) {

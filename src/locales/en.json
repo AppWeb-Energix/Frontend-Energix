@@ -11,6 +11,24 @@
   "header": {
     "greeting": "Hello"
   },
+  "planSelection": {
+    "title": "Choose Your Plan",
+    "subtitle": "Select the plan that best fits your needs",
+    "free": "Free",
+    "popular": "Popular",
+    "month": "month",
+    "continueBasic": "Continue with Basic Plan",
+    "continuePayment": "Continue to Payment",
+    "skip": "Skip for now (Basic Plan)"
+  },
+  "paymentSetup": {
+    "title": "Set Up Payment Method",
+    "selectedPlan": "Selected plan",
+    "total": "Total due today",
+    "confirmPayment": "Confirm Payment",
+    "continueBasic": "Continue with Basic Plan",
+    "error": "Error processing payment"
+  },
   "dashboard": {
     "title": "General Summary",
     "kpi": {

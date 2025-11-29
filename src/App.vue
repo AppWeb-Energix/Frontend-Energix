@@ -15,9 +15,9 @@ const router = useRouter()
 const isRouterReady = ref(false)
 
 
-// Seleccionar el views basado en si la ruta es pública
+// Seleccionar el layout basado en si la ruta es pública o requiere layout vacío (onboarding)
 const layout = computed(() => {
-  return route.meta?.public === true ? EmptyLayout : LayoutShell
+  return (route.meta?.public === true || route.meta?.emptyLayout === true) ? EmptyLayout : LayoutShell
 })
 
 // Esperar a que el router esté listo antes de renderizar

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '@/identity/domain/auth/auth.service'
+import { isAuthenticated, isPlanSelectionPending } from '@/identity/domain/auth/auth.service'
 
 const getUserPlan = () => {
     try {
@@ -38,6 +38,8 @@ const ConfigurationBasic = () => import('../personalization/presentation/views/c
 const Configuration = () => import('../personalization/presentation/views/configuration.vue')
 const NotFound = () => import('../shared/presentation/components/notfound.vue')
 const Subscriptions = () => import('../loyalty/presentation/views/subscriptions.vue')
+const PlanSelection = () => import('../identity/presentation/views/PlanSelection.vue')
+const PaymentSetup = () => import('../loyalty/presentation/views/PaymentSetup.vue')
 
 // Eager load para rutas críticas de autenticación
 import Login from '../identity/presentation/views/Login.vue'
@@ -78,6 +80,20 @@ export const router = createRouter({
             name: 'register',
             component: Register,
             meta: { title: 'Sign Up', public: true }
+        },
+
+        // Rutas de selección de plan (post-registro) - usan EmptyLayout como Login/Register
+        {
+            path: '/plan-selection',
+            name: 'plan-selection',
+            component: PlanSelection,
+            meta: { title: 'Seleccionar Plan', requiresAuth: true, isPlanFlow: true, emptyLayout: true }
+        },
+        {
+            path: '/payment-setup',
+            name: 'payment-setup',
+            component: PaymentSetup,
+            meta: { title: 'Configurar Pago', requiresAuth: true, isPlanFlow: true, emptyLayout: true }
         },
 
         // RUTA DINÁMICA DE DASHBOARD (El nombre 'dashboard' actúa como proxy)
@@ -169,16 +185,26 @@ export const router = createRouter({
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.meta?.requiresAuth === true
     const isPublic = to.meta?.public === true
+    const isPlanFlow = to.meta?.isPlanFlow === true
     const logged = isAuthenticated()
+    const pendingPlan = isPlanSelectionPending()
 
     if (requiresAuth && !logged) {
         return next({ name: 'login' })
     }
 
     if (isPublic && logged) {
-        // CORRECCIÓN: Usamos el nombre de ruta genérico 'dashboard'
-        // que ya tiene el redirect configurado para ir al plan correcto.
+        // Si está logueado y tiene plan pendiente, ir a selección de plan
+        if (pendingPlan) {
+            return next({ name: 'plan-selection' })
+        }
         return next({ name: 'dashboard' })
+    }
+
+    // Si está autenticado, tiene plan pendiente, y NO está en el flujo de plan
+    // Redirigir a selección de plan
+    if (logged && pendingPlan && !isPlanFlow) {
+        return next({ name: 'plan-selection' })
     }
 
     next()
