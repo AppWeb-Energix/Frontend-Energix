@@ -39,6 +39,9 @@ const Configuration = () => import('../personalization/presentation/views/config
 const NotFound = () => import('../shared/presentation/components/notfound.vue')
 const Subscriptions = () => import('../loyalty/presentation/views/subscriptions.vue')
 
+// Lazy load para rutas de administración
+const AdminPanel = () => import('../admin/presentation/views/AdminPanel.vue')
+
 // Eager load para rutas críticas de autenticación
 import Login from '../identity/presentation/views/Login.vue'
 import Register from '../identity/presentation/views/Register.vue'
@@ -128,11 +131,26 @@ export const router = createRouter({
             component: () => import('@/device/presentation/views/devices.vue'),
             meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
+        // Rutas de administración
         {
             path: '/admin',
             name: 'admin',
-            component: AdminDashboard,
-            meta: { title: 'Admin', requiresAuth: true, role: 'Admin' }
+            component: AdminPanel,
+            meta: { title: 'Panel Admin', requiresAdmin: true, public: true },
+            beforeEnter: (to, from, next) => {
+                const mode = localStorage.getItem('energix-mode')
+                if (mode === 'admin') {
+                    next()
+                } else {
+                    next({ path: '/admin/login' })
+                }
+            }
+        },
+        {
+            path: '/admin/login',
+            name: 'admin-login',
+            component: () => import('../admin/presentation/views/LoginAdmin.vue'),
+            meta: { title: 'Admin Login', public: true }
         },
         // Redirección dinámica para configuración según el plan
         {
