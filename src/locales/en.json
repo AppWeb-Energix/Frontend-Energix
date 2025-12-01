@@ -276,6 +276,7 @@
   },
   "configuration": {
     "title": "Configuration",
+    "greeting": "Hello, {name}",
     "subtitle": "Current plan: {plan} | History: {history} | Devices: {devices}",
     "profile": {
       "title": "Profile",
@@ -284,7 +285,7 @@
       "lastName": "Last Name",
       "lastNamePlaceholder": "Benavides",
       "email": "Email",
-      "emailPlaceholder": "user@example.com",
+      "emailPlaceholder": "user&#64;example.com",
       "dni": "ID Number",
       "dniPlaceholder": "99999999",
       "district": "District",

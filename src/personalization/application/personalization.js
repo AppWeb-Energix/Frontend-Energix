@@ -60,7 +60,9 @@ export const usePersonalizationStore = defineStore('personalization', () => {
                 chartDevice.value = data.chartDevice
                 justCleared.value = false
             } else {
+                // Usuario nuevo sin personalización previa
                 resetToDefaults()
+                justCleared.value = false
             }
         } catch (error) {
             resetToDefaults()
