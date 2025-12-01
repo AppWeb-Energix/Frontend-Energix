@@ -1,81 +1,61 @@
 import { AuthApi } from '@/identity/infrastructure/endpoint/auth.endpoint.js';
-import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js';
 
 export function setAuthenticated(v = true){ localStorage.setItem('isAuthenticated', String(v)); }
 export function isAuthenticated(){ return localStorage.getItem('isAuthenticated') === 'true'; }
 
-export async function validateCodeService(code){
-    return AuthApi.validateCode(code);
+// --- Funciones para manejar planSelectionPending ---
+export function setPlanSelectionPending(v = true) {
+    localStorage.setItem('planSelectionPending', String(v));
 }
 
-export async function registerService(payload){
-    const { user, token } = await AuthApi.register(payload);
-    localStorage.setItem('token', token || 'dev-token');
-    localStorage.setItem('energix-user', JSON.stringify(user));
-    localStorage.setItem('energix-plan', user.plan);
-    setAuthenticated(true);
-
-    // 🔥 CREAR ALERTA DE BIENVENIDA AUTOMÁTICAMENTE
-    await AlertsApi.create({
-        userId: user.id,
-        type: 'info',
-        badge: 'Bienvenida',
-        message: '¡Registro completado exitosamente!',
-        details: `Bienvenid@ ${user.name}! Tu plan es: ${user.plan.toUpperCase()}. Comienza a monitorear tu consumo energético.`,
-        timestamp: new Date().toISOString(),
-        isRead: false
-    });
-
-    return user;
-}
-
-export async function loginService({ email, password }){
-    const { user, token } = await AuthApi.login({ email, password });
-    localStorage.setItem('token', token);
-    localStorage.setItem('energix-user', JSON.stringify(user));
-    // Fija plan por defecto hasta que el backend entregue el plan real
-    localStorage.setItem('energix-plan', user.plan || 'student');
-    setAuthenticated(true);
-
-    // 🔥 CREAR ALERTA DE LOGIN (opcional, puede fallar si el backend no expone /alerts)
-    try {
-        await AlertsApi.create({
-            userId: user.id,
-            type: 'info',
-            badge: 'Info',
-            message: 'Sesión iniciada',
-            details: `¡Bienvenid@ de vuelta, ${user.name}!`,
-            timestamp: new Date().toISOString(),
-            isRead: false
-        });
-    } catch (error) {
-        console.warn('No se pudo crear alerta de login:', error);
-    }
-
-    return user;
-}
-
-export function logoutService(){
-    ['token','energix-user','energix-plan'].forEach(k => localStorage.removeItem(k));
-    setAuthenticated(false);
+export function isPlanSelectionPending() {
+    return localStorage.getItem('planSelectionPending') === 'true';
 }
 
 /**
- * Cambia la contraseña del usuario autenticado
- * @param {number|string} userId
- * @param {string} currentPassword
- * @param {string} newPassword
- * @returns {Promise<void>}
+ * Actualiza el token y plan después de un upgrade de suscripción
+ * @param {string} token - Nuevo token JWT con claims de plan
+ * @param {Object} plan - Objeto con info del plan { uiKey, displayName, type, billingPeriod }
  */
-export async function changePasswordService(userId, currentPassword, newPassword) {
-    const response = await fetch(`/api/v1/users/${userId}/password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword })
-    });
-    if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Error al actualizar la contraseña');
+export function updateTokenAndPlan(token, plan) {
+    if (token) {
+        localStorage.setItem('token', token);
     }
-    return;
+    if (plan) {
+        localStorage.setItem('energix-plan', plan.uiKey || plan.displayName?.toLowerCase() || 'basic');
+    }
+    setPlanSelectionPending(false);
+}
+
+export async function registerService(payload){
+    // Desestructurar el contrato del backend real: { token, user, plan, planSelectionPending }
+    const { token, user, plan, planSelectionPending } = await AuthApi.register(payload);
+
+    // Guardar en localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('energix-user', JSON.stringify(user));
+    localStorage.setItem('energix-plan', plan?.uiKey || 'basic');
+    setPlanSelectionPending(planSelectionPending ?? true); // Por defecto pending después del registro
+    setAuthenticated(true);
+
+    return { user, planSelectionPending: planSelectionPending ?? true };
+}
+
+export async function loginService({ email, password }){
+    // Desestructurar el contrato del backend real: { token, user, plan, planSelectionPending }
+    const { token, user, plan, planSelectionPending } = await AuthApi.login({ email, password });
+
+    // Guardar en localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('energix-user', JSON.stringify(user));
+    localStorage.setItem('energix-plan', plan?.uiKey || 'basic');
+    setPlanSelectionPending(planSelectionPending ?? false);
+    setAuthenticated(true);
+
+    return { user, planSelectionPending: planSelectionPending ?? false };
+}
+
+export function logoutService(){
+    ['token','energix-user','energix-plan','planSelectionPending'].forEach(k => localStorage.removeItem(k));
+    setAuthenticated(false);
 }
