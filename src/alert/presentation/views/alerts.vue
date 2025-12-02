@@ -7,18 +7,6 @@
         <h2 class="alerts-title">{{ t('alerts.title') }}</h2>
 
         <div class="alerts-actions">
-          <!-- Simular solo en Estudiantil / Familiar -->
-          <button
-              v-if="plan !== 'basic'"
-              class="btn-outline"
-              @click="simulateAlert"
-              :disabled="loading"
-              :title="t('alerts.simulateAlert')"
-          >
-            <span class="add-icon">+</span>
-            {{ t('alerts.simulateAlert') }}
-          </button>
-
           <button
               class="btn-outline"
               @click="markAllAsRead"
@@ -51,7 +39,7 @@
                 <div class="alert-badge" :class="{ 'alert-badge-info': a.type === 'info' }">
                   {{ a.badge }}
                 </div>
-                <div class="alert-timestamp">{{ formatDate(a.timestamp) }}</div>
+                <div class="alert-timestamp">{{ formatDate(a) }}</div>
               </div>
               <div class="alert-message">{{ a.message }}</div>
               <div class="alert-details">{{ a.details }}</div>
@@ -124,8 +112,10 @@ async function loadAlerts () {
 
 // Formateo fecha
 function formatDate (ts) {
+  const d = ts?.createdAt || ts?.created_at || ts
+  if (!d) return ''
   return new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'medium' })
-      .format(new Date(ts))
+      .format(new Date(d))
 }
 
 // Acciones
@@ -147,24 +137,6 @@ async function markAllAsRead () {
     alerts.value.forEach(a => { a.isRead = true })
   } catch (e) {
     console.error('markAllAsRead error:', e)
-  }
-}
-
-// Solo para probar en Estudiantil/Familiar
-async function simulateAlert () {
-  if (!currentUser.value || plan.value === 'basic') return
-  const candidates = [
-    { type: 'high_consumption', data: { percentage: 85, current: 255, limit: 300 } },
-    { type: 'new_device',       data: { deviceType: 'enchufe inteligente' } },
-    { type: 'peak_hours',       data: {} },
-    { type: 'monthly_report',   data: { month: 'septiembre' } }
-  ]
-  const pick = candidates[Math.floor(Math.random() * candidates.length)]
-  try {
-    await AlertsApi.generateSystemAlert(currentUser.value.id, pick.type, pick.data)
-    await loadAlerts()
-  } catch (e) {
-    console.error('simulateAlert error:', e)
   }
 }
 

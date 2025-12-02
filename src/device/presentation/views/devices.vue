@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { DevicesApi, onDeviceChange } from '@/device/infrastructure/devices.endpoint.js'
-import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js'
 import { useAuth } from '@/identity/application/composables/useAuth.js'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -70,7 +69,6 @@ async function addZone() {
   const z = await DevicesApi.createZone(user.value.id, name)
   zones.value.push(z)
   newZoneName.value = ''
-  await AlertsApi.generateSystemAlert(user.value.id, 'zone_created', { zoneName: z.name })
   toast.add({ severity: 'success', summary: t('devices.zones.created'), life: 1200 })
 }
 
@@ -79,7 +77,6 @@ async function renameZone(z) {
   if (!name || name.trim() === z.name) return
   const patched = await DevicesApi.renameZone(z.id, name.trim())
   z.name = patched.name
-  await AlertsApi.generateSystemAlert(user.value.id, 'zone_renamed', { zoneName: z.name })
   toast.add({ severity: 'success', summary: t('devices.zones.updated'), life: 1200 })
 }
 
@@ -97,7 +94,6 @@ async function removeZone(z) {
       affected.forEach(d => d.zoneId = null)
       await DevicesApi.deleteZone(z.id)
       zones.value = zones.value.filter(x => x.id !== z.id)
-      await AlertsApi.generateSystemAlert(user.value.id, 'zone_deleted', { zoneName: z.name })
       toast.add({ severity: 'success', summary: t('devices.zones.deleted'), life: 1200 })
     }
   })
@@ -105,11 +101,6 @@ async function removeZone(z) {
 
 async function updateDeviceZone(row) {
   await DevicesApi.setDeviceZone(row.id, row.zoneId || null)
-  const z = zones.value.find(x => x.id === row.zoneId)
-  await AlertsApi.generateSystemAlert(user.value.id, 'device_zoned', {
-    deviceName: row.name,
-    zoneName: z?.name || t('devices.noZone')
-  })
   toast.add({ severity: 'success', summary: t('devices.zones.assigned'), life: 1200 })
 }
 
@@ -166,7 +157,6 @@ async function addDevice() {
       online: false
     })
     devices.value.push(created)
-    await AlertsApi.generateSystemAlert(user.value.id, 'new_device', { deviceType: deviceTypeByPlan.value })
     toast.add({ severity: 'success', summary: t('devices.messages.added'), life: 1400 })
     return
   }
@@ -201,7 +191,6 @@ async function createManualDevice() {
 
   devices.value.push(created)
   showManualDialog.value = false
-  await AlertsApi.generateSystemAlert(user.value.id, 'new_device', { deviceType: 'manual' })
   toast.add({ severity: 'success', summary: 'Dispositivo manual agregado', life: 1400 })
 }
 
@@ -211,17 +200,14 @@ async function togglePower(row) {
   const patched = await DevicesApi.update(row.id, { status: next, online: next === 'on' })
   row.status = patched.status
   row.online = patched.online
-  await AlertsApi.generateSystemAlert(user.value.id, 'power_changed', { deviceName: row.name, status: row.status })
 }
 
 async function rename() {
   if (plan.value === 'basic') return
   if (!selected.value || !newName.value.trim()) return
-  const oldName = selected.value.name
   const patched = await DevicesApi.update(selected.value.id, { name: newName.value.trim() })
   selected.value.name = patched.name
   newName.value = ''
-  await AlertsApi.generateSystemAlert(user.value.id, 'device_renamed', { oldName, newName: patched.name })
   toast.add({ severity: 'success', summary: 'Nombre actualizado', life: 1200 })
 }
 
@@ -239,10 +225,6 @@ async function unlink() {
       await DevicesApi.remove(toRemove.id)
       devices.value = devices.value.filter(x => x.id !== toRemove.id)
       selected.value = null
-      await AlertsApi.generateSystemAlert(user.value.id, 'device_unlinked', {
-        deviceName: toRemove.name,
-        deviceType: toRemove.type || deviceTypeByPlan.value
-      })
       toast.add({ severity: 'success', summary: 'Dispositivo desvinculado', life: 1400 })
     }
   })
