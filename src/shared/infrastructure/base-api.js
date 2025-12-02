@@ -1,8 +1,19 @@
 // shared/infrastructure/base-api.js
 const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
+// ✅ Función para obtener el token del localStorage/sessionStorage
+function getAuthHeaders() {
+    const token = localStorage.getItem('token'); // o sessionStorage
+    if (token) {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // ← JWT aquí
+        };
+    }
+    return { 'Content-Type': 'application/json' };
+}
+
 async function parseJsonSafely(res) {
-    // Algunas rutas (DELETE en json-server) devuelven 200/204 sin cuerpo.
     const text = await res.text();
     if (!text) return null;
     try { return JSON.parse(text); } catch { return null; }
@@ -22,10 +33,11 @@ async function handleError(res) {
     throw err;
 }
 
-
 export const http = {
     async get(url) {
-        const res = await fetch(BASE + url);
+        const res = await fetch(BASE + url, {
+            headers: getAuthHeaders() // ✅ Incluye JWT
+        });
         if (!res.ok) return handleError(res);
         return await res.json();
     },
@@ -33,7 +45,7 @@ export const http = {
     async post(url, body) {
         const res = await fetch(BASE + url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -43,7 +55,7 @@ export const http = {
     async put(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -53,18 +65,19 @@ export const http = {
     async patch(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
         return await res.json();
     },
 
-    // ✅ TOLERA respuestas sin cuerpo (200/204) → no rompe la UI
     async delete(url) {
-        const res = await fetch(BASE + url, { method: 'DELETE' });
+        const res = await fetch(BASE + url, {
+            method: 'DELETE',
+            headers: getAuthHeaders() // ✅ Incluye JWT
+        });
         if (!res.ok) return handleError(res);
-        // Si no hay JSON, devolvemos true para indicar éxito
         const json = await parseJsonSafely(res);
         return json ?? true;
     },
