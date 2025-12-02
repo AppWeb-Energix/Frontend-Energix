@@ -1,50 +1,44 @@
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useI18n } from "vue-i18n";
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 export function useDateTime() {
-    const { t, locale } = useI18n();
-    const day = ref('');
-    const date = ref('');
-    const month = ref('');
-    const hour = ref('');
-    let timer;
+    const { locale } = useI18n()
 
-    function actualDate() {
-        const now = new Date();
-        const dayIndex = now.getDay();
-        const monthIndex = now.getMonth();
+    const day = ref('')
+    const date = ref('')
+    const month = ref('')
+    const hour = ref('')
 
-        // Usar traducciones de i18n
-        day.value = t(`time.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayIndex]}`);
-        date.value = now.getDate();
-        month.value = t(`time.months.${['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'][monthIndex]}`);
+    const actualDate = () => {
+        const now = new Date()
 
-        let h = now.getHours();
-        let m = now.getMinutes();
-        let sufijo = h >= 12 ? t('time.pm') : t('time.am');
-        h = h % 12 || 12;
-        hour.value = `${h}:${String(m).padStart(2, '0')} ${sufijo}`;
+        // ✅ Convierte locale a string explícitamente
+        const localeString = locale.value || 'es'
+
+        // Obtener el día de la semana
+        day.value = now.toLocaleDateString(localeString, { weekday: 'long' })
+
+        // Obtener el día del mes
+        date.value = now.getDate()
+
+        // Obtener el mes
+        month.value = now.toLocaleDateString(localeString, { month: 'long' })
+
+        // Obtener la hora
+        hour.value = now.toLocaleTimeString(localeString, {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
     }
 
-    // Recargar cuando cambie el idioma
-    const stopWatch = locale && typeof locale === 'object' && 'value' in locale
-        ? (() => {
-            const unwatch = typeof locale.value === 'string'
-                ? null
-                : null;
-            return unwatch;
-          })()
-        : null;
+    // Actualizar cada segundo
+    actualDate()
+    setInterval(actualDate, 1000)
 
-    onMounted(() => {
-        actualDate();
-        timer = setInterval(actualDate, 5000);
-    });
-
-    onBeforeUnmount(() => {
-        clearInterval(timer);
-        if (stopWatch) stopWatch();
-    });
-
-    return { day, date, month, hour };
+    return {
+        day,
+        date,
+        month,
+        hour
+    }
 }
