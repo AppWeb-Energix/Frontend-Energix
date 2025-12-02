@@ -1,67 +1,70 @@
 <template>
   <div class="configuration-container">
     <div class="configuration-content">
+      <!-- Modal de Alertas -->
+      <ModalAlert ref="modalAlert" />
+
       <!-- Header -->
-      <h2 class="main-title">Configuración</h2>
-      <p class="subtitle">
-        Plan actual: <span class="highlight">Plan Estudiantil</span> | Historial: <span class="highlight">90 días</span> | Dispositivos: <span class="highlight">2</span>
+      <h2 class="main-title">{{ t('configuration.title') }}</h2>
+      <p class="subtitle" v-if="userFullName">
+        {{ t('configuration.greeting', { name: userFullName }) }}
       </p>
 
       <!-- Sección Perfil -->
       <div class="section-card">
-        <h3 class="section-title">Perfil</h3>
+        <h3 class="section-title">{{ t('configuration.profile.title') }}</h3>
         <div class="form-grid-2">
           <div class="form-group">
-            <label class="form-label">Nombre</label>
-            <input v-model="profile.name" type="text" placeholder="Jorge" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.name') }}</label>
+            <input v-model="profile.name" type="text" :placeholder="t('configuration.profile.namePlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Apellido</label>
-            <input v-model="profile.lastName" type="text" placeholder="Benavides" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.lastName') }}</label>
+            <input v-model="profile.lastName" type="text" :placeholder="t('configuration.profile.lastNamePlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Correo</label>
-            <input v-model="profile.email" type="email" placeholder="correo@ejemplo.com" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.email') }}</label>
+            <input v-model="profile.email" type="email" :placeholder="t('configuration.profile.emailPlaceholder')" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">DNI</label>
-            <input v-model="profile.dni" type="text" placeholder="99999999" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.dni') }}</label>
+            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" readonly />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Distrito</label>
-            <input v-model="profile.district" type="text" placeholder="Miraflores" class="form-input" />
+            <label class="form-label">{{ t('configuration.profile.district') }}</label>
+            <input v-model="profile.district" type="text" :placeholder="t('configuration.profile.districtPlaceholder')" class="form-input" />
           </div>
         </div>
 
         <div class="button-group">
-          <button @click="saveProfile" class="btn-primary">Guardar cambios</button>
-          <button @click="cancelProfile" class="btn-secondary">Cancelar</button>
+          <button @click="saveProfile" class="btn-primary">{{ t('configuration.buttons.save') }}</button>
+          <button @click="cancelProfile" class="btn-secondary">{{ t('configuration.buttons.cancel') }}</button>
         </div>
       </div>
 
       <!-- Sección Seguridad -->
       <div class="section-card">
-        <h3 class="section-title">Seguridad</h3>
+        <h3 class="section-title">{{ t('configuration.security.title') }}</h3>
         <div class="security-grid">
           <div class="form-group">
-            <label class="form-label">Contraseña actual</label>
+            <label class="form-label">{{ t('configuration.security.currentPassword') }}</label>
             <input v-model="security.currentPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Nueva contraseña</label>
+            <label class="form-label">{{ t('configuration.security.newPassword') }}</label>
             <input v-model="security.newPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Confirmar contraseña</label>
+            <label class="form-label">{{ t('configuration.security.confirmPassword') }}</label>
             <input v-model="security.confirmPassword" type="password" class="form-input" />
           </div>
         </div>
         <div class="button-container">
-          <button @click="updatePassword" class="btn-primary">Actualizar contraseña</button>
+          <button @click="updatePassword" class="btn-primary">{{ t('configuration.security.updatePassword') }}</button>
         </div>
       </div>
 
@@ -70,9 +73,20 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { http } from '@/shared/infrastructure/base-api.js'
+import { ProfileApi } from '../../infrastructure/profile.endpoint.js'
+import { ProfileDomainService } from '../../domain/profile.service.js'
+import ModalAlert from '../components/ModalAlert.vue'
 //import { changePasswordService } from '@/identity/domain/auth/auth.service.js'
 
+const { t } = useI18n()
+
+// Referencia al modal
+const modalAlert = ref(null)
+
+// Obtener el ID del usuario
 function getUserId() {
   try {
     const user = JSON.parse(localStorage.getItem('energix-user'))
@@ -107,53 +121,72 @@ const fileInput = ref(null)
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('energix-user'))
   if (user) {
-    profile.name = user.name || ''
-    profile.lastName = user.lastName || ''
+    profile.name = user.firstName || user.name || user.first_name || ''
+    profile.lastName = user.lastName || user.apellido || user.last_name || ''
     profile.email = user.email || ''
-    profile.dni = user.dni || ''
-    profile.district = user.district || ''
+    profile.dni = user.dni || user.document || ''
+    profile.district = user.district || user.ciudad || user.city || ''
     // No se carga password ni plan aquí
   }
+})
+
+
+// Computed para el nombre completo del usuario
+const userFullName = computed(() => {
+  const firstName = profile.name || ''
+  const lastName = profile.lastName || ''
+  return `${firstName} ${lastName}`.trim() || 'Usuario'
 })
 
 // Funciones para perfil
 const saveProfile = async () => {
   try {
     const userId = getUserId()
-    // PATCH solo los campos editables
-    const response = await fetch(`http://localhost:3001/api/v1/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: profile.name,
-        lastName: profile.lastName,
-        email: profile.email,
-        dni: profile.dni,
-        district: profile.district
-      })
-    })
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}))
-      throw new Error(data.message || 'Error al guardar el perfil')
-    }
-    // Actualizar localStorage
-    const user = JSON.parse(localStorage.getItem('energix-user'))
-    Object.assign(user, {
-      name: profile.name,
+
+    // Validar datos del perfil
+    const validation = ProfileDomainService.validateProfileData({
+      firstName: profile.name,
       lastName: profile.lastName,
       email: profile.email,
       dni: profile.dni,
       district: profile.district
     })
+
+    if (!validation.isValid) {
+      const errors = Object.values(validation.errors).join(', ')
+      modalAlert.value?.show('Configuración', errors)
+      return
+    }
+
+    // Llamar al API de perfil usando ProfileApi (endpoint /Profile)
+    const updatedProfile = await ProfileApi.updateUserProfile(userId, {
+      firstName: profile.name,
+      lastName: profile.lastName,
+      email: profile.email,
+      dni: profile.dni,
+      district: profile.district
+    })
+
+    // Actualizar localStorage
+    const user = JSON.parse(localStorage.getItem('energix-user'))
+    Object.assign(user, {
+      firstName: updatedProfile.firstName,
+      name: updatedProfile.firstName,
+      lastName: updatedProfile.lastName,
+      email: updatedProfile.email,
+      dni: updatedProfile.dni,
+      district: updatedProfile.district
+    })
     localStorage.setItem('energix-user', JSON.stringify(user))
-    alert('Perfil guardado correctamente')
+    modalAlert.value?.show('Configuración', 'Perfil guardado correctamente')
   } catch (err) {
-    alert(err.message || 'Error al guardar el perfil')
+    const errorMsg = err.response?.data?.message || err.message || 'Error al guardar el perfil'
+    modalAlert.value?.show('Configuración', errorMsg)
   }
 }
 
 const cancelProfile = () => {
-  alert('Cambios cancelados')
+  modalAlert.value?.show('Configuración', 'Cambios cancelados')
 }
 
 const handleFileUpload = (event) => {
@@ -163,25 +196,55 @@ const handleFileUpload = (event) => {
   }
 }
 
-// Función para seguridad
-/*
+// Función para cambio de contraseña
 const updatePassword = async () => {
-  if (security.newPassword !== security.confirmPassword) {
-    alert('Las contraseñas no coinciden')
+  // Validación 1: Verificar que todos los campos estén llenos
+  if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
+    modalAlert.value?.show(t('configuration.title'), t('configuration.messages.passwordFieldsRequired') || 'Todos los campos son requeridos')
     return
   }
+
+  // Validación 2: Verificar que la nueva contraseña y la confirmación coincidan
+  if (security.newPassword !== security.confirmPassword) {
+    modalAlert.value?.show(t('configuration.title'), t('configuration.messages.passwordMismatch') || 'Las contraseñas no coinciden')
+    return
+  }
+
+  // Validación 3: Verificar que la nueva contraseña sea diferente a la actual
+  if (security.currentPassword === security.newPassword) {
+    modalAlert.value?.show(t('configuration.title'), t('configuration.messages.passwordSameAsCurrent') || 'La nueva contraseña debe ser diferente a la actual')
+    return
+  }
+
+  // Validación 4: Validar fortaleza de la contraseña
+  const passwordValidation = ProfileDomainService.validatePasswordStrength(security.newPassword)
+  if (!passwordValidation.isValid) {
+    const errors = passwordValidation.errors.join(', ')
+    modalAlert.value?.show(t('configuration.title'), errors)
+    return
+  }
+
   try {
     const userId = getUserId()
-    await changePasswordService(userId, security.currentPassword, security.newPassword)
-    alert('Contraseña actualizada correctamente')
+
+    // Llamar al API de perfil para cambiar contraseña
+    await ProfileApi.changePassword(
+      userId,
+      security.currentPassword,
+      security.newPassword
+    )
+
+    // Limpiar los campos después de éxito
     security.currentPassword = ''
     security.newPassword = ''
     security.confirmPassword = ''
+
+    modalAlert.value?.show(t('configuration.title'), t('configuration.messages.passwordUpdated') || 'Contraseña actualizada correctamente')
   } catch (err) {
-    alert(err.message || 'Error al actualizar la contraseña')
+    const errorMsg = err.response?.data?.message || err.message || t('configuration.messages.passwordError') || 'Error al actualizar la contraseña'
+    modalAlert.value?.show(t('configuration.title'), errorMsg)
   }
 }
-*/
 </script>
 
 <style scoped>
