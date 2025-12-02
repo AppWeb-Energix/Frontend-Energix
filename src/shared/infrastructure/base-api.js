@@ -1,5 +1,5 @@
 // shared/infrastructure/base-api.js
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+const BASE = import.meta.env.VITE_API_BASE_URL;
 
 // ✅ Función para obtener el token del localStorage/sessionStorage
 function getAuthHeaders() {
