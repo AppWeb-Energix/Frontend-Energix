@@ -1,20 +1,19 @@
 // shared/infrastructure/base-api.js
 const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
+// ✅ Función para obtener el token del localStorage/sessionStorage
 function getAuthHeaders() {
-    const headers = { 'Content-Type': 'application/json' };
-
-    // Usar el token de usuario normal como token principal
-    const userToken = localStorage.getItem('token');
-    if (userToken) {
-        headers['Authorization'] = `Bearer ${userToken}`;
+    const token = localStorage.getItem('token'); // o sessionStorage
+    if (token) {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // ← JWT aquí
+        };
     }
-
-    return headers;
+    return { 'Content-Type': 'application/json' };
 }
 
 async function parseJsonSafely(res) {
-    // Algunas rutas (DELETE en json-server) devuelven 200/204 sin cuerpo.
     const text = await res.text();
     if (!text) return null;
     try { return JSON.parse(text); } catch { return null; }
@@ -37,7 +36,7 @@ async function handleError(res) {
 export const http = {
     async get(url) {
         const res = await fetch(BASE + url, {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders() // ✅ Incluye JWT
         });
         if (!res.ok) return handleError(res);
         return await res.json();
@@ -46,7 +45,7 @@ export const http = {
     async post(url, body) {
         const res = await fetch(BASE + url, {
             method: 'POST',
-            headers: getAuthHeaders(),
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -56,7 +55,7 @@ export const http = {
     async put(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PUT',
-            headers: getAuthHeaders(),
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -66,21 +65,19 @@ export const http = {
     async patch(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PATCH',
-            headers: getAuthHeaders(),
+            headers: getAuthHeaders(), // ✅ Incluye JWT
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
         return await res.json();
     },
 
-    // ✅ TOLERA respuestas sin cuerpo (200/204) → no rompe la UI
     async delete(url) {
         const res = await fetch(BASE + url, {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: getAuthHeaders() // ✅ Incluye JWT
         });
         if (!res.ok) return handleError(res);
-        // Si no hay JSON, devolvemos true para indicar éxito
         const json = await parseJsonSafely(res);
         return json ?? true;
     },

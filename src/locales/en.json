@@ -228,6 +228,12 @@
       "remove": "Remove",
       "confirmRemove": "Remove this card?"
     },
+    "modal": {
+      "title": "Delete card?",
+      "message": "Are you sure you want to delete this card? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
     "messages": {
       "planChanged": "Your plan is now {plan}",
       "cardSaved": "Card saved successfully.",
@@ -294,19 +300,18 @@
   },
   "configuration": {
     "title": "Configuration",
-    "subtitle": "Current plan: {plan} | History: {history} | Devices: {devices}",
+    "currentPlan": "Current Plan",
+    "history": "History",
+    "devices": "Devices",
     "profile": {
       "title": "Profile",
       "name": "Name",
-      "namePlaceholder": "Jorge",
       "lastName": "Last Name",
-      "lastNamePlaceholder": "Benavides",
       "email": "Email",
-      "emailPlaceholder": "user@example.com",
       "dni": "ID Number",
-      "dniPlaceholder": "99999999",
       "district": "District",
-      "districtPlaceholder": "Miraflores"
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel"
     },
     "personalization": {
       "title": "Dashboard Personalization",

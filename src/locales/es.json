@@ -228,6 +228,12 @@
       "remove": "Eliminar",
       "confirmRemove": "¿Eliminar esta tarjeta?"
     },
+    "modal": {
+      "title": "¿Eliminar tarjeta?",
+      "message": "¿Estás seguro que deseas eliminar esta tarjeta? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
     "messages": {
       "planChanged": "Tu plan ahora es {plan}",
       "cardSaved": "Tarjeta guardada correctamente.",
@@ -294,19 +300,18 @@
   },
   "configuration": {
     "title": "Configuración",
-    "subtitle": "Plan actual: {plan} | Historial: {history} | Dispositivos: {devices}",
+    "currentPlan": "Plan actual",
+    "history": "Historial",
+    "devices": "Dispositivos",
     "profile": {
       "title": "Perfil",
       "name": "Nombre",
-      "namePlaceholder": "Jorge",
       "lastName": "Apellido",
-      "lastNamePlaceholder": "Benavides",
       "email": "Correo",
-      "emailPlaceholder": "usuario@ejemplo.com",
       "dni": "DNI",
-      "dniPlaceholder": "99999999",
       "district": "Distrito",
-      "districtPlaceholder": "Miraflores"
+      "saveChanges": "Guardar cambios",
+      "cancel": "Cancelar"
     },
     "personalization": {
       "title": "Personalización del panel",
@@ -392,4 +397,3 @@
     "pm": "p. m."
   }
 }
-

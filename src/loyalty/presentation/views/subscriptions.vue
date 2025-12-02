@@ -190,11 +190,37 @@
           <span v-if="c.default" class="badge-default">{{ t('subscriptions.billing.default') }}</span>
         </div>
         <div class="right">
-          <button class="btn btn-danger" @click="removeCard(c.id)">{{ t('subscriptions.billing.remove') }}</button>
+          <button class="btn btn-danger" @click="confirmRemoveCard(c)">{{ t('subscriptions.billing.remove') }}</button>
         </div>
       </li>
     </ul>
   </section>
+
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="showModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>{{ t('subscriptions.modal.title') }}</h3>
+          </div>
+          <div class="modal-body">
+            <p>{{ t('subscriptions.modal.message') }}</p>
+            <div class="card-preview">
+              <strong>{{ cardToRemove?.brand }}</strong> •••• •••• •••• {{ cardToRemove?.last4 }}
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-cancel" @click="closeModal">
+              {{ t('subscriptions.modal.cancel') }}
+            </button>
+            <button class="btn btn-danger" @click="removeCard">
+              {{ t('subscriptions.modal.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -210,6 +236,43 @@ const error = ref(null)
 // Id del usuario actual simulado
 const userId = 3
 
+// Opciones de la barra superior
+const options = ['change', 'renew', 'cancel']
+const selectedOption = ref('change')
+
+// --------- Estado tarjeta ----------
+const cardholder = ref('')
+const cardnumber = ref('')
+const expiry = ref('')
+const cvv = ref('')
+const asDefault = ref(true)
+
+const saveMsg = ref('')
+const errorMsg = ref('')
+
+// --------- Tarjetas guardadas (UNA SOLA DECLARACIÓN) ----------
+const savedCards = ref([])
+
+// --------- Modal de confirmación (UNA SOLA DECLARACIÓN) ----------
+const showModal = ref(false)
+const cardToRemove = ref(null)
+
+// --------- Funciones de carga y guardado ----------
+function loadSavedCards() {
+  const stored = localStorage.getItem('savedCards')
+
+  if (stored) {
+    savedCards.value = JSON.parse(stored)
+  } else {
+    // Tarjetas de ejemplo
+    savedCards.value = [
+      { id: 'card_1', brand: 'Visa', last4: '4242', exp: '12/27', default: true },
+      { id: 'card_2', brand: 'Mastercard', last4: '4444', exp: '08/26', default: false }
+    ]
+    localStorage.setItem('savedCards', JSON.stringify(savedCards.value))
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await fetch(`http://localhost:3001/users/${userId}`)
@@ -220,6 +283,9 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  // Cargar tarjetas guardadas
+  loadSavedCards()
 })
 
 async function changePlan(newPlan) {
@@ -238,24 +304,9 @@ async function changePlan(newPlan) {
   }
 }
 
-// Opciones de la barra superior
-const options = ['change', 'renew', 'cancel']
-const selectedOption = ref('change')
-
-// --------- Estado tarjeta ----------
-const cardholder = ref('')
-const cardnumber = ref('')   // mostrado con espacios
-const expiry = ref('')       // MM/AA
-const cvv = ref('')
-const asDefault = ref(true)
-
-const saveMsg = ref('')
-const errorMsg = ref('')
-
 // --------- Helpers de formato/validación ----------
 function onlyDigits(key, max = 4) {
-  const v = cvv; // por ahora solo tenemos CVV
-  v.value = v.value.replace(/\D/g, '').slice(0, max);
+  cvv.value = cvv.value.replace(/\D/g, '').slice(0, max)
 }
 
 function formatCardNumber() {
@@ -269,7 +320,6 @@ function formatExpiry() {
 }
 
 function luhnValid(num) {
-  // num sin espacios
   const s = num.replace(/\s+/g, '')
   if (!/^\d{13,19}$/.test(s)) return false
   let sum = 0, dbl = false
@@ -287,7 +337,7 @@ function expiryValid(mmYY) {
   if (mm < 1 || mm > 12) return false
   const year = 2000 + yy
   const now = new Date()
-  const lastDay = new Date(year, mm, 0) // último día del mes
+  const lastDay = new Date(year, mm, 0)
   return lastDay >= new Date(now.getFullYear(), now.getMonth(), 1)
 }
 
@@ -300,26 +350,33 @@ function saveCard() {
   if (!expiryValid(expiry.value)) { errorMsg.value = t('subscriptions.messages.errors.invalidExpiry'); return }
   if (!/^\d{3,4}$/.test(cvv.value)) { errorMsg.value = t('subscriptions.messages.errors.invalidCvv'); return }
 
-  // Aquí llamarías a tu backend: POST /billing/payment-methods
-  // fetch('/api/payment-methods', { method:'POST', body: JSON.stringify({...}) })
-
   saveMsg.value = t('subscriptions.messages.cardSaved')
 }
 
-// Lista mock de tarjetas (cámbialo cuando conectes tu backend)
-const savedCards = ref([
-  { id: 'card_1', brand: 'Visa',       last4: '4242', exp: '12/27', default: true  },
-  { id: 'card_2', brand: 'Mastercard', last4: '4444', exp: '08/26', default: false },
-])
-
-function removeCard(id) {
-  if (!confirm(t('subscriptions.billing.confirmRemove'))) return
-  const idx = savedCards.value.findIndex(c => c.id === id)
-  if (idx !== -1) savedCards.value.splice(idx, 1)
-
+// --------- Funciones del modal ----------
+function confirmRemoveCard(card) {
+  cardToRemove.value = card
+  showModal.value = true
 }
 
+function closeModal() {
+  showModal.value = false
+  cardToRemove.value = null
+}
+
+function removeCard() {
+  if (!cardToRemove.value) return
+
+  const idx = savedCards.value.findIndex(c => c.id === cardToRemove.value.id)
+  if (idx !== -1) {
+    savedCards.value.splice(idx, 1)
+    localStorage.setItem('savedCards', JSON.stringify(savedCards.value))
+  }
+
+  closeModal()
+}
 </script>
+
 
 <style scoped>
 /* Contenedor */
@@ -500,7 +557,109 @@ input:focus{ border-color:#001f49; box-shadow:0 0 0 3px rgba(0,31,73,.12) }
   color: #fff;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
 
+/* Modal Content */
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 440px;
+  width: 90%;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-body p {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.card-preview {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.card-preview strong {
+  color: #0f172a;
+}
+
+.modal-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+/* Transiciones */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
+  transform: scale(0.95);
+}
 /* Responsive */
 @media(max-width:980px){.plans-grid{grid-template-columns:1fr}}
 </style>

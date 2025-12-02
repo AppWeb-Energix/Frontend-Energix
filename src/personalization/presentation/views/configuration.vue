@@ -1,8 +1,12 @@
 <template>
   <div class="configuration-container">
     <div class="configuration-content">
-      <!-- Header -->
+      <!-- Modal de Alertas -->
+      <ModalAlert ref="modalAlert" />
       <h2 class="main-title">{{ t('configuration.title') }}</h2>
+      <p class="subtitle" v-if="userFullName">
+        {{ t('configuration.greeting', { name: userFullName }) }}
+      </p>
       <p class="subtitle">
         {{ t('configuration.subtitle', {
           plan: planInfo.plan,
@@ -32,7 +36,7 @@
 
           <div class="form-group">
             <label class="form-label">{{ t('configuration.profile.dni') }}</label>
-            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" />
+            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" readonly />
           </div>
 
           <div class="form-group">
@@ -116,11 +120,15 @@ import { reactive, ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { usePersonalizationStore } from '../../application/personalization.js'
+import { ProfileApi } from '../../infrastructure/profile.endpoint.js'
+import { ProfileDomainService } from '../../domain/profile.service.js'
 import { http } from '@/shared/infrastructure/base-api.js'
+import ModalAlert from '../components/ModalAlert.vue'
 
 const { t } = useI18n()
 
 const personalizationStore = usePersonalizationStore()
+const modalAlert = ref(null)
 const {
   kpiCurrent,
   kpiCost,
@@ -133,14 +141,14 @@ const {
 function getUserId() {
   try {
     const user = JSON.parse(localStorage.getItem('energix-user'))
-    return user?.id || 1
+    return user?.id || null
   } catch {
-    return 1
+    return null
   }
 }
 
-// Cambia esto por la obtención real del userId si tienes auth
-const userId = 1
+// Obtener userId dinámicamente
+const userId = ref(getUserId())
 
 // Estados locales para otras secciones (estos no están en Pinia)
 const profile = reactive({
@@ -186,18 +194,32 @@ const planInfo = computed(() => {
   return { plan: planName, history, devices }
 })
 
+// Computed para el nombre completo del usuario
+const userFullName = computed(() => {
+  const firstName = profile.name || ''
+  const lastName = profile.lastName || ''
+  return `${firstName} ${lastName}`.trim() || 'Usuario'
+})
+
 // Cargar datos del usuario autenticado
 onMounted(async () => {
-  const user = JSON.parse(localStorage.getItem('energix-user'))
-  if (user) {
-    profile.name = user.name || ''
-    profile.lastName = user.lastName || ''
+  userId.value = getUserId()
+
+  // Cargar datos del usuario desde localStorage
+  const user = JSON.parse(localStorage.getItem('energix-user') || '{}')
+  console.log('Usuario cargado de localStorage:', user) // Para debug
+
+  if (user && user.id) {
+    // Soportar diferentes naming: firstName/name, lastName/apellido
+    profile.name = user.firstName || user.name || user.first_name || ''
+    profile.lastName = user.lastName || user.apellido || user.last_name || ''
     profile.email = user.email || ''
-    profile.dni = user.dni || ''
-    profile.district = user.district || ''
-    // No se carga password ni plan aquí
+    profile.dni = user.dni || user.document || ''
+    profile.district = user.district || user.ciudad || user.city || ''
   }
-  await personalizationStore.loadPersonalization() // Cargar personalización del usuario actual desde la API
+
+  // Cargar personalización del usuario desde la API
+  await personalizationStore.loadPersonalization()
 })
 
 // Watch para detectar cambios en el usuario (cuando cambia de cuenta)
@@ -214,7 +236,6 @@ watch(
     // Solo recargar si ambos IDs son válidos y diferentes (cambio de usuario a usuario)
     // NO recargar si newUserId es null (cerró sesión)
     if (newUserId && oldUserId && newUserId !== oldUserId) {
-      console.log('👤 Usuario cambió, recargando personalización...', { oldUserId, newUserId })
       await personalizationStore.loadPersonalization()
     }
   }
@@ -225,9 +246,27 @@ const saveProfile = async () => {
   try {
     const userId = getUserId()
 
-    // PATCH solo los campos editables usando http de base-api
-    await http.patch(`/users/${userId}`, {
-      name: profile.name,
+    // Validar datos del perfil
+    const validation = ProfileDomainService.validateProfileData({
+      firstName: profile.name,
+      lastName: profile.lastName,
+      email: profile.email,
+      dni: profile.dni,
+      district: profile.district
+    })
+
+    if (!validation.isValid) {
+      const errors = Object.values(validation.errors).join(', ')
+      modalAlert.value?.show(
+        t('configuration.title'),
+        errors
+      )
+      return
+    }
+
+    // Llamar al API de perfil
+    const updatedProfile = await ProfileApi.updateUserProfile(userId, {
+      firstName: profile.name,
       lastName: profile.lastName,
       email: profile.email,
       dni: profile.dni,
@@ -237,21 +276,33 @@ const saveProfile = async () => {
     // Actualizar localStorage
     const user = JSON.parse(localStorage.getItem('energix-user'))
     Object.assign(user, {
-      name: profile.name,
-      lastName: profile.lastName,
-      email: profile.email,
-      dni: profile.dni,
-      district: profile.district
+      firstName: updatedProfile.firstName,
+      name: updatedProfile.firstName,
+      lastName: updatedProfile.lastName,
+      email: updatedProfile.email,
+      dni: updatedProfile.dni,
+      district: updatedProfile.district
     })
     localStorage.setItem('energix-user', JSON.stringify(user))
-    alert(t('configuration.messages.profileSaved'))
+
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.profileSaved')
+    )
   } catch (err) {
-    alert(err.message || t('configuration.messages.profileError'))
+    const errorMsg = err.response?.data?.message || err.message || t('configuration.messages.profileError')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      errorMsg
+    )
   }
 }
 
 const cancelProfile = () => {
-  alert(t('configuration.messages.changesCancelled'))
+  modalAlert.value?.show(
+    t('configuration.title'),
+    t('configuration.messages.changesCancelled')
+  )
 }
 
 const handleFileUpload = (event) => {
@@ -265,18 +316,30 @@ const handleFileUpload = (event) => {
 const savePersonalization = async () => {
   try {
     await personalizationStore.savePersonalization()
-    alert(t('configuration.messages.personalizationSaved'))
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.personalizationSaved')
+    )
   } catch (err) {
-    alert(err.message || t('configuration.messages.personalizationError'))
+    modalAlert.value?.show(
+      t('configuration.title'),
+      err.message || t('configuration.messages.personalizationError')
+    )
   }
 }
 
 const resetPersonalization = async () => {
   try {
     await personalizationStore.resetPersonalization()
-    alert(t('configuration.messages.personalizationReset'))
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.personalizationReset')
+    )
   } catch (err) {
-    alert(err.message || t('configuration.messages.personalizationError'))
+    modalAlert.value?.show(
+      t('configuration.title'),
+      err.message || t('configuration.messages.personalizationError')
+    )
   }
 }
 
@@ -284,60 +347,67 @@ const resetPersonalization = async () => {
 const updatePassword = async () => {
   // Validación 1: Verificar que todos los campos estén llenos
   if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
-    alert(t('configuration.messages.passwordFieldsRequired') || 'Todos los campos son requeridos')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.passwordFieldsRequired') || 'Todos los campos son requeridos'
+    )
     return
   }
 
   // Validación 2: Verificar que la nueva contraseña y la confirmación coincidan
   if (security.newPassword !== security.confirmPassword) {
-    alert(t('configuration.messages.passwordMismatch') || 'Las contraseñas no coinciden')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.passwordMismatch') || 'Las contraseñas no coinciden'
+    )
     return
   }
 
   // Validación 3: Verificar que la nueva contraseña sea diferente a la actual
   if (security.currentPassword === security.newPassword) {
-    alert(t('configuration.messages.passwordSameAsCurrent') || 'La nueva contraseña debe ser diferente a la actual')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.passwordSameAsCurrent') || 'La nueva contraseña debe ser diferente a la actual'
+    )
     return
   }
 
-  // Validación 4: Verificar longitud mínima
-  if (security.newPassword.length < 4) {
-    alert(t('configuration.messages.passwordTooShort') || 'La contraseña debe tener al menos 4 caracteres')
+  // Validación 4: Validar fortaleza de la contraseña
+  const passwordValidation = ProfileDomainService.validatePasswordStrength(security.newPassword)
+  if (!passwordValidation.isValid) {
+    const errors = passwordValidation.errors.join(', ')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      errors
+    )
     return
   }
 
   try {
     const userId = getUserId()
 
-    // Obtener el usuario actual para verificar la contraseña usando http
-    const user = await http.get(`/users/${userId}`)
-
-    // Verificar que la contraseña actual sea correcta
-    if (user.password !== security.currentPassword) {
-      alert('La contraseña actual es incorrecta')
-      return
-    }
-
-    // Actualizar la contraseña usando http.patch
-    await http.patch(`/users/${userId}`, {
-      password: security.newPassword
-    })
-
-    // Actualizar también en localStorage si existe
-    const storedUser = JSON.parse(localStorage.getItem('energix-user') || '{}')
-    if (storedUser.id === userId) {
-      storedUser.password = security.newPassword
-      localStorage.setItem('energix-user', JSON.stringify(storedUser))
-    }
+    // Llamar al API de perfil para cambiar contraseña
+    await ProfileApi.changePassword(
+      userId,
+      security.currentPassword,
+      security.newPassword
+    )
 
     // Limpiar los campos después de éxito
     security.currentPassword = ''
     security.newPassword = ''
     security.confirmPassword = ''
 
-    alert(t('configuration.messages.passwordUpdated') || 'Contraseña actualizada correctamente')
+    modalAlert.value?.show(
+      t('configuration.title'),
+      t('configuration.messages.passwordUpdated') || 'Contraseña actualizada correctamente'
+    )
   } catch (err) {
-    alert(err.message || t('configuration.messages.passwordError') || 'Error al actualizar la contraseña')
+    const errorMsg = err.response?.data?.message || err.message || t('configuration.messages.passwordError') || 'Error al actualizar la contraseña'
+    modalAlert.value?.show(
+      t('configuration.title'),
+      errorMsg
+    )
   }
 }
 </script>
