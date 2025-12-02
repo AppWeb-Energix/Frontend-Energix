@@ -1,4 +1,22 @@
 {
+  "auth": {
+    "title": "Welcome to Energix",
+    "emailLabel": "Email",
+    "emailPlaceholder": "example@email.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "loginButton": "Sign In",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up here",
+    "adminPanel": "Admin Panel",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "loginError": "Login error"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "alerts": "Alerts",

@@ -41,6 +41,9 @@ const Subscriptions = () => import('../loyalty/presentation/views/subscriptions.
 const PlanSelection = () => import('../identity/presentation/views/PlanSelection.vue')
 const PaymentSetup = () => import('../loyalty/presentation/views/PaymentSetup.vue')
 
+// Lazy load para rutas de administración
+const AdminPanel = () => import('../admin/presentation/views/AdminPanel.vue')
+
 // Eager load para rutas críticas de autenticación
 import Login from '../identity/presentation/views/Login.vue'
 import Register from '../identity/presentation/views/Register.vue'
@@ -56,8 +59,16 @@ export const router = createRouter({
         {
             path: '/',
             redirect: () => {
-                // Redirige al login o al dashboard dinámico principal
-                return isAuthenticated() ? '/dashboard' : '/login'
+                // ⭐ VERIFICAR MODO ADMIN PRIMERO
+                const isAdminMode = localStorage.getItem('energix-mode') === 'admin'
+                const authenticated = isAuthenticated()
+
+                if (isAdminMode && authenticated) {
+                    return '/admin'
+                }
+
+                // Lógica normal para usuarios no-admin
+                return authenticated ? '/dashboard' : '/login'
             }
         },
 
@@ -144,6 +155,27 @@ export const router = createRouter({
             component: () => import('@/device/presentation/views/devices.vue'),
             meta: { title: 'Mis Dispositivos', requiresAuth: true }
         },
+        // Rutas de administración
+        {
+            path: '/admin',
+            name: 'admin',
+            component: AdminPanel,
+            meta: { title: 'Panel Admin', requiresAdmin: true, public: true },
+            beforeEnter: (to, from, next) => {
+                const mode = localStorage.getItem('energix-mode')
+                if (mode === 'admin') {
+                    next()
+                } else {
+                    next({ path: '/admin/login' })
+                }
+            }
+        },
+        {
+            path: '/admin/login',
+            name: 'admin-login',
+            component: () => import('../admin/presentation/views/LoginAdmin.vue'),
+            meta: { title: 'Admin Login', public: true }
+        },
         // Redirección dinámica para configuración según el plan
         {
             path: '/configuration',
@@ -189,21 +221,33 @@ router.beforeEach((to, from, next) => {
     const logged = isAuthenticated()
     const pendingPlan = isPlanSelectionPending()
 
+    // ⭐ VERIFICAR MODO ADMIN
+    const isAdminMode = localStorage.getItem('energix-mode') === 'admin'
+
     if (requiresAuth && !logged) {
         return next({ name: 'login' })
     }
 
     if (isPublic && logged) {
-        // Si está logueado y tiene plan pendiente, ir a selección de plan
+        // ⭐ SI ESTÁ EN MODO ADMIN, NO REDIRIGIR AL DASHBOARD
+        if (isAdminMode) {
+            // Si está intentando ir a admin/login y ya está autenticado como admin, ir al panel
+            if (to.path === '/admin/login') {
+                return next({ path: '/admin' })
+            }
+            // Para cualquier otra ruta pública en modo admin, permitir navegación normal
+            return next()
+        }
+
+        // Lógica normal para usuarios no-admin
         if (pendingPlan) {
             return next({ name: 'plan-selection' })
         }
         return next({ name: 'dashboard' })
     }
 
-    // Si está autenticado, tiene plan pendiente, y NO está en el flujo de plan
-    // Redirigir a selección de plan
-    if (logged && pendingPlan && !isPlanFlow) {
+    // Si está autenticado, tiene plan pendiente, NO está en el flujo de plan, Y NO está en modo admin
+    if (logged && pendingPlan && !isPlanFlow && !isAdminMode) {
         return next({ name: 'plan-selection' })
     }
 
