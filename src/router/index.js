@@ -59,8 +59,16 @@ export const router = createRouter({
         {
             path: '/',
             redirect: () => {
-                // Redirige al login o al dashboard dinámico principal
-                return isAuthenticated() ? '/dashboard' : '/login'
+                // ⭐ VERIFICAR MODO ADMIN PRIMERO
+                const isAdminMode = localStorage.getItem('energix-mode') === 'admin'
+                const authenticated = isAuthenticated()
+
+                if (isAdminMode && authenticated) {
+                    return '/admin'
+                }
+
+                // Lógica normal para usuarios no-admin
+                return authenticated ? '/dashboard' : '/login'
             }
         },
 
@@ -213,21 +221,33 @@ router.beforeEach((to, from, next) => {
     const logged = isAuthenticated()
     const pendingPlan = isPlanSelectionPending()
 
+    // ⭐ VERIFICAR MODO ADMIN
+    const isAdminMode = localStorage.getItem('energix-mode') === 'admin'
+
     if (requiresAuth && !logged) {
         return next({ name: 'login' })
     }
 
     if (isPublic && logged) {
-        // Si está logueado y tiene plan pendiente, ir a selección de plan
+        // ⭐ SI ESTÁ EN MODO ADMIN, NO REDIRIGIR AL DASHBOARD
+        if (isAdminMode) {
+            // Si está intentando ir a admin/login y ya está autenticado como admin, ir al panel
+            if (to.path === '/admin/login') {
+                return next({ path: '/admin' })
+            }
+            // Para cualquier otra ruta pública en modo admin, permitir navegación normal
+            return next()
+        }
+
+        // Lógica normal para usuarios no-admin
         if (pendingPlan) {
             return next({ name: 'plan-selection' })
         }
         return next({ name: 'dashboard' })
     }
 
-    // Si está autenticado, tiene plan pendiente, y NO está en el flujo de plan
-    // Redirigir a selección de plan
-    if (logged && pendingPlan && !isPlanFlow) {
+    // Si está autenticado, tiene plan pendiente, NO está en el flujo de plan, Y NO está en modo admin
+    if (logged && pendingPlan && !isPlanFlow && !isAdminMode) {
         return next({ name: 'plan-selection' })
     }
 

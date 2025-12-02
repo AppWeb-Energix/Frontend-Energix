@@ -1,6 +1,18 @@
 // shared/infrastructure/base-api.js
 const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
+function getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+
+    // Usar el token de usuario normal como token principal
+    const userToken = localStorage.getItem('token');
+    if (userToken) {
+        headers['Authorization'] = `Bearer ${userToken}`;
+    }
+
+    return headers;
+}
+
 async function parseJsonSafely(res) {
     // Algunas rutas (DELETE en json-server) devuelven 200/204 sin cuerpo.
     const text = await res.text();
@@ -24,7 +36,9 @@ async function handleError(res) {
 
 export const http = {
     async get(url) {
-        const res = await fetch(BASE + url);
+        const res = await fetch(BASE + url, {
+            headers: getAuthHeaders()
+        });
         if (!res.ok) return handleError(res);
         return await res.json();
     },
@@ -32,7 +46,7 @@ export const http = {
     async post(url, body) {
         const res = await fetch(BASE + url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -42,7 +56,7 @@ export const http = {
     async put(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -52,7 +66,7 @@ export const http = {
     async patch(url, body) {
         const res = await fetch(BASE + url, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(body),
         });
         if (!res.ok) return handleError(res);
@@ -61,7 +75,10 @@ export const http = {
 
     // ✅ TOLERA respuestas sin cuerpo (200/204) → no rompe la UI
     async delete(url) {
-        const res = await fetch(BASE + url, { method: 'DELETE' });
+        const res = await fetch(BASE + url, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         if (!res.ok) return handleError(res);
         // Si no hay JSON, devolvemos true para indicar éxito
         const json = await parseJsonSafely(res);

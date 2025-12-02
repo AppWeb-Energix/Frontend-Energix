@@ -268,7 +268,12 @@ const buildDoughnutChart = (data) => {
 
 const loadData = async () => {
   try {
+    console.log('🔄 Cargando datos de admin dashboard...')
+    console.log('🔑 Token disponible:', !!localStorage.getItem('token'))
+    console.log('🌐 URL backend:', import.meta.env.VITE_API_BASE_URL)
+
     const response = await AdminApi.getDashboardStats()
+    console.log('✅ Respuesta del backend:', response)
     stats.value = response
 
     // Esperar al siguiente tick para asegurar que los canvas están renderizados
@@ -276,7 +281,11 @@ const loadData = async () => {
     buildBarChart(response)
     buildDoughnutChart(response)
   } catch (error) {
-    console.error('Error cargando estadísticas del dashboard:', error)
+    console.error('❌ Error cargando estadísticas:', error)
+    console.error('📊 Status HTTP:', error.status)
+    console.error('💬 Mensaje:', error.message)
+
+    // Datos de fallback
     stats.value = {
       totalUsers: 0,
       activeSubscriptions: 0,
@@ -284,6 +293,17 @@ const loadData = async () => {
       totalRevenue: 0,
       plans: [],
       topDistricts: []
+    }
+
+    // Información específica del error
+    if (error.status === 401) {
+      console.warn('🔐 Error 401: Token de autorización inválido o expirado')
+    } else if (error.status === 404) {
+      console.warn('🔍 Error 404: Endpoint /admin/dashboard no encontrado')
+    } else if (error.status === 500) {
+      console.warn('🔥 Error 500: Error interno del servidor backend')
+    } else {
+      console.warn('🌐 Error de red o conexión con el backend')
     }
   }
 }

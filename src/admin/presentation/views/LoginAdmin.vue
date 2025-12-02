@@ -6,7 +6,7 @@
           <i class="pi pi-shield text-6xl mb-3" style="color: var(--color-primary)"></i>
         </div>
         <h1 class="text-4xl font-bold mb-2" style="color: var(--color-primary)">
-          Panel de Administración
+          Acceso al Panel Admin
         </h1>
         <p class="text-600 text-lg">Energix Control System</p>
       </div>
@@ -19,13 +19,13 @@
         <div class="field mb-4">
           <label for="adminEmail" class="block font-semibold mb-2">
             <i class="pi pi-user mr-2"></i>
-            Email de Administrador
+            Email de Usuario
           </label>
           <InputText
             id="adminEmail"
             v-model="credentials.email"
             type="email"
-            placeholder="admin@energix.com"
+            placeholder="usuario@ejemplo.com"
             class="w-full"
             :class="{ 'p-invalid': emailError }"
             required
@@ -87,46 +87,19 @@
         <Divider />
         <div class="text-center text-sm text-500">
           <i class="pi pi-info-circle mr-2"></i>
-          Solo personal autorizado puede acceder a este panel
+          Ingresa con cualquier cuenta de usuario registrada
         </div>
       </div>
     </div>
 
-    <!-- Información de seguridad -->
-    <div class="security-info">
-      <Card class="security-card">
-        <template #content>
-          <div class="flex align-items-start gap-3">
-            <i class="pi pi-shield text-3xl text-primary"></i>
-            <div>
-              <h3 class="text-lg font-bold mb-2" style="color: var(--color-primary)">
-                Acceso Seguro
-              </h3>
-              <ul class="text-sm text-600 pl-0" style="list-style: none;">
-                <li class="mb-2">
-                  <i class="pi pi-check-circle text-success mr-2"></i>
-                  Conexión encriptada SSL/TLS
-                </li>
-                <li class="mb-2">
-                  <i class="pi pi-check-circle text-success mr-2"></i>
-                  Autenticación de dos factores
-                </li>
-                <li class="mb-2">
-                  <i class="pi pi-check-circle text-success mr-2"></i>
-                  Registro de auditoría completo
-                </li>
-              </ul>
-            </div>
-          </div>
-        </template>
-      </Card>
-    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { AuthApi } from '@/identity/infrastructure/endpoint/auth.endpoint.js'
 
 // Importaciones de PrimeVue
 import Button from 'primevue/button'
@@ -134,7 +107,6 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
-import Card from 'primevue/card'
 import Divider from 'primevue/divider'
 
 const router = useRouter()
@@ -184,41 +156,52 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    // Simular autenticación de admin
-    // En producción, esto debería llamar a un endpoint real
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    console.log('🔐 Login admin usando sistema normal de autenticación...')
 
-    // Credenciales de ejemplo para desarrollo
-    // En producción, esto se validaría contra el backend
-    const validAdminEmails = ['admin@energix.com', 'admin@localhost']
-    const validPassword = 'admin123'
+    // Usar el mismo sistema de login que el login normal
+    const response = await AuthApi.login({
+      email: credentials.value.email,
+      password: credentials.value.password
+    })
 
-    if (validAdminEmails.includes(credentials.value.email) &&
-        credentials.value.password === validPassword) {
+    console.log('✅ Login exitoso:', response)
 
-      // Establecer el flag de modo admin
-      localStorage.setItem('energix-mode', 'admin')
-      localStorage.setItem('energix-admin-token', 'admin-token-' + Date.now())
+    // ⭐ LIMPIAR CUALQUIER ESTADO PREVIO
+    localStorage.removeItem('energix-mode')
+    localStorage.removeItem('planSelectionPending')
 
-      // Guardar información del admin
-      localStorage.setItem('energix-user', JSON.stringify({
-        email: credentials.value.email,
-        role: 'Admin',
-        name: 'Administrador'
-      }))
+    // ⭐ ESTABLECER MODO ADMIN PRIMERO Y VERIFICAR
+    localStorage.setItem('energix-mode', 'admin')
+    const modeVerification = localStorage.getItem('energix-mode')
+    console.log('🔐 Modo admin establecido:', modeVerification === 'admin' ? '✅' : '❌')
 
-      if (rememberMe.value) {
-        localStorage.setItem('energix-admin-remember', 'true')
-      }
+    // Guardar el token y datos del usuario (mismo que login normal)
+    localStorage.setItem('token', response.token)
+    localStorage.setItem('energix-user', JSON.stringify(response.user))
+    localStorage.setItem('energix-plan', response.plan?.uiKey || 'basic')
+    localStorage.setItem('isAuthenticated', 'true')
 
-      // Redirigir al panel de administración
-      router.push('/admin')
-    } else {
-      errorMessage.value = 'Credenciales inválidas. Acceso denegado.'
+    if (rememberMe.value) {
+      localStorage.setItem('energix-admin-remember', 'true')
     }
+
+    console.log('🚀 Redirigiendo al panel de administración...')
+    console.log('📍 URL objetivo: /admin')
+
+    // ⭐ USAR REPLACE Y FORZAR REDIRECCIÓN
+    await router.replace('/admin')
+
+    // Verificación adicional
+    setTimeout(() => {
+      if (router.currentRoute.value.path !== '/admin') {
+        console.warn('⚠️ Redirección falló, intentando nuevamente...')
+        router.replace('/admin')
+      }
+    }, 100)
+
   } catch (error) {
-    console.error('Error en el login de admin:', error)
-    errorMessage.value = 'Error al conectar con el servidor. Intenta nuevamente.'
+    console.error('❌ Error en login admin:', error)
+    errorMessage.value = error.message || 'Credenciales inválidas. Verifica tu email y contraseña.'
   } finally {
     loading.value = false
   }
@@ -329,20 +312,6 @@ const goToHome = () => {
   margin-top: 1.5rem;
 }
 
-.security-info {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  max-width: 350px;
-  z-index: 1;
-}
-
-.security-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
 @media (max-width: 768px) {
   .admin-login-container {
     padding: 1rem;
@@ -350,12 +319,6 @@ const goToHome = () => {
 
   .admin-login-card {
     padding: 2rem 1.5rem;
-  }
-
-  .security-info {
-    position: static;
-    margin-top: 2rem;
-    max-width: 100%;
   }
 }
 

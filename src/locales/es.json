@@ -1,4 +1,22 @@
 {
+  "auth": {
+    "title": "Bienvenido a Energix",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "ejemplo@correo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Ingrese su contraseña",
+    "loginButton": "Iniciar Sesión",
+    "noAccount": "¿No tiene una cuenta?",
+    "registerLink": "Regístrese aquí",
+    "adminPanel": "Panel Administrador",
+    "errors": {
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "El formato del correo electrónico no es válido",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+      "loginError": "Error al iniciar sesión"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "alerts": "Alertas",

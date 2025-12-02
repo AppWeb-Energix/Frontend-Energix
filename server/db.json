@@ -1159,5 +1159,71 @@
       "chartMonthly": false,
       "chartDevice": true
     }
-  ]
+  ],
+  "admin": {
+    "dashboard": {
+      "totalUsers": 4,
+      "activeSubscriptions": 3,
+      "activeDevices": 12,
+      "totalRevenue": 285.50,
+      "plans": [
+        {
+          "name": "Basic",
+          "count": 2,
+          "revenue": 59.98
+        },
+        {
+          "name": "Student",
+          "count": 1,
+          "revenue": 15.99
+        },
+        {
+          "name": "Family",
+          "count": 1,
+          "revenue": 209.53
+        }
+      ],
+      "topDistricts": [
+        {
+          "district": "Miraflores",
+          "users": 1
+        },
+        {
+          "district": "DAS",
+          "users": 1
+        },
+        {
+          "district": "LIONCE",
+          "users": 1
+        },
+        {
+          "district": "Net",
+          "users": 1
+        }
+      ]
+    },
+    "health": {
+      "healthy": true,
+      "details": "Todos los servicios funcionan correctamente",
+      "uptime": "15d 3h 42m",
+      "lastCheck": "2025-01-02T10:30:00Z"
+    },
+    "audit": [
+      {
+        "timestamp": "2025-01-02T10:25:00Z",
+        "action": "USER_LOGIN",
+        "message": "Usuario admin@energix.com inició sesión"
+      },
+      {
+        "timestamp": "2025-01-02T09:45:00Z",
+        "action": "DEVICE_ADDED",
+        "message": "Nuevo dispositivo registrado por usuario ID: 3"
+      },
+      {
+        "timestamp": "2025-01-02T09:30:00Z",
+        "action": "SUBSCRIPTION_CREATED",
+        "message": "Nueva suscripción Family creada para usuario ID: 3"
+      }
+    ]
+  }
 }
