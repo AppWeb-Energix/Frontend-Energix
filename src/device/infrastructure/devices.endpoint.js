@@ -12,8 +12,9 @@ function emitDeviceChange(){ listeners.forEach(cb => { try { cb() } catch(err){ 
 export const DevicesApi = {
     async getByUserId(userId){ return await http.get(`${DEVICES}?userId=${userId}`) },
     async create(userId, payload){
-        const result = await http.post(DEVICES, { userId, linkedAt:new Date().toISOString(), status:'off', online:false, zoneId:null, ...payload })
-        emitDeviceChange(); return result
+        const result = await http.post(`${DEVICES}?userId=${userId}`, payload)
+        emitDeviceChange();
+        return result
     },
     async update(id, patch){ const r = await http.patch(`${DEVICES}/${id}`, patch); emitDeviceChange(); return r },
     async remove(id){ const r = await http.delete(`${DEVICES}/${id}`); emitDeviceChange(); return r },
