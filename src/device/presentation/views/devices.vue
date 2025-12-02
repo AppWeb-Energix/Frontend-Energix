@@ -20,13 +20,18 @@ import Column from 'primevue/column'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 
-const { currentUser, userPlan, getCurrentUser } = useAuth()
+import { DevicesApi } from '@/device/infrastructure/devices.endpoint.js'
+import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js'
+import { useAuth } from '@/identity/application/composables/useAuth.js'
+
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const { currentUser, userPlan, getCurrentUser } = useAuth()
 
-const user = currentUser
-const plan = userPlan
+// ===== estado base =====
+const user  = currentUser
+const plan  = userPlan // 'basic' | 'student' | 'family'
 const devices = ref([])
 const loading = ref(false)
 
@@ -128,6 +133,10 @@ async function load() {
     loading.value = false
   }
 }
+onMounted(() => {
+  getCurrentUser()
+  load()
+})
 
 let unsubscribe
 
