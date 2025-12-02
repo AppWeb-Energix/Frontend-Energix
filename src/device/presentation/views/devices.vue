@@ -20,10 +20,6 @@ import Column from 'primevue/column'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 
-import { DevicesApi } from '@/device/infrastructure/devices.endpoint.js'
-import { AlertsApi } from '@/alert/infrastructure/alerts.endpoint.js'
-import { useAuth } from '@/identity/application/composables/useAuth.js'
-
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
