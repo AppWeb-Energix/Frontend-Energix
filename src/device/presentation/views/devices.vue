@@ -159,7 +159,7 @@ async function addDevice() {
 
   if (plan.value !== 'basic') {
     const index = devices.value.filter(d => d.type === deviceTypeByPlan.value).length + 1
-    const created = await DevicesApi.create(user.value.id, {
+    const created = await DevicesApi.create({
       name: `${t('devices.addDevice')} ${index}`,
       type: deviceTypeByPlan.value,
       status: 'off',
@@ -188,7 +188,7 @@ async function createManualDevice() {
   const estimatedCost = Number(m.estimatedCost)
   const tariff = m.tariff ? Number(m.tariff) : null
 
-  const created = await DevicesApi.create(user.value.id, {
+  const created = await DevicesApi.create({
     name: autoManualName.value,
     type: 'manual',
     deviceKind: manualForm.value.deviceKind,
