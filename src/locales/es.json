@@ -167,7 +167,8 @@
         "features": {
           "basic": "Todo lo del Plan Básico",
           "extendedHistory": "Historial ampliado (últimos 3 meses)",
-          "recommendations": "Recomendaciones personalizadas", "smartAlerts": "Alertas inteligentes (consumo inusual, luces encendidas)",
+          "recommendations": "Recomendaciones personalizadas",
+          "smartAlerts": "Alertas inteligentes (consumo inusual, luces encendidas)",
           "deviceLimit": "Agregar maximo 2 dispositivos"
         }
       },
@@ -208,6 +209,12 @@
       "default": "Predeterminada",
       "remove": "Eliminar",
       "confirmRemove": "¿Eliminar esta tarjeta?"
+    },
+    "modal": {
+      "title": "¿Eliminar tarjeta?",
+      "message": "¿Estás seguro que deseas eliminar esta tarjeta? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
     },
     "messages": {
       "planChanged": "Tu plan ahora es {plan}",
@@ -275,20 +282,18 @@
   },
   "configuration": {
     "title": "Configuración",
-    "greeting": "Hola, {name}",
-    "subtitle": "Plan actual: {plan} | Historial: {history} | Dispositivos: {devices}",
+    "currentPlan": "Plan actual",
+    "history": "Historial",
+    "devices": "Dispositivos",
     "profile": {
       "title": "Perfil",
       "name": "Nombre",
-      "namePlaceholder": "Jorge",
       "lastName": "Apellido",
-      "lastNamePlaceholder": "Benavides",
       "email": "Correo",
-      "emailPlaceholder": "usuario&#64;ejemplo.com",
       "dni": "DNI",
-      "dniPlaceholder": "99999999",
       "district": "Distrito",
-      "districtPlaceholder": "Miraflores"
+      "saveChanges": "Guardar cambios",
+      "cancel": "Cancelar"
     },
     "personalization": {
       "title": "Personalización del panel",
@@ -374,4 +379,3 @@
     "pm": "p. m."
   }
 }
-

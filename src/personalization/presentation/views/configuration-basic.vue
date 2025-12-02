@@ -2,66 +2,68 @@
   <div class="configuration-container">
     <div class="configuration-content">
       <!-- Header -->
-      <h2 class="main-title">Configuración</h2>
+      <h2 class="main-title">{{ t('configuration.title') }}</h2>
       <p class="subtitle">
-        Plan actual: <span class="highlight">Plan Estudiantil</span> | Historial: <span class="highlight">90 días</span> | Dispositivos: <span class="highlight">2</span>
+        {{ t('configuration.currentPlan') }}: <span class="highlight">Plan Estudiantil</span> |
+        {{ t('configuration.history') }}: <span class="highlight">90 días</span> |
+        {{ t('configuration.devices') }}: <span class="highlight">2</span>
       </p>
 
       <!-- Sección Perfil -->
       <div class="section-card">
-        <h3 class="section-title">Perfil</h3>
+        <h3 class="section-title">{{ t('configuration.profile.title') }}</h3>
         <div class="form-grid-2">
           <div class="form-group">
-            <label class="form-label">Nombre</label>
+            <label class="form-label">{{ t('configuration.profile.name') }}</label>
             <input v-model="profile.name" type="text" placeholder="Jorge" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Apellido</label>
+            <label class="form-label">{{ t('configuration.profile.lastName') }}</label>
             <input v-model="profile.lastName" type="text" placeholder="Benavides" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Correo</label>
+            <label class="form-label">{{ t('configuration.profile.email') }}</label>
             <input v-model="profile.email" type="email" placeholder="correo@ejemplo.com" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">DNI</label>
+            <label class="form-label">{{ t('configuration.profile.dni') }}</label>
             <input v-model="profile.dni" type="text" placeholder="99999999" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Distrito</label>
+            <label class="form-label">{{ t('configuration.profile.district') }}</label>
             <input v-model="profile.district" type="text" placeholder="Miraflores" class="form-input" />
           </div>
         </div>
 
         <div class="button-group">
-          <button @click="saveProfile" class="btn-primary">Guardar cambios</button>
-          <button @click="cancelProfile" class="btn-secondary">Cancelar</button>
+          <button @click="saveProfile" class="btn-primary">{{ t('configuration.profile.saveChanges') }}</button>
+          <button @click="cancelProfile" class="btn-secondary">{{ t('configuration.profile.cancel') }}</button>
         </div>
       </div>
 
       <!-- Sección Seguridad -->
       <div class="section-card">
-        <h3 class="section-title">Seguridad</h3>
+        <h3 class="section-title">{{ t('configuration.security.title') }}</h3>
         <div class="security-grid">
           <div class="form-group">
-            <label class="form-label">Contraseña actual</label>
+            <label class="form-label">{{ t('configuration.security.currentPassword') }}</label>
             <input v-model="security.currentPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Nueva contraseña</label>
+            <label class="form-label">{{ t('configuration.security.newPassword') }}</label>
             <input v-model="security.newPassword" type="password" class="form-input" />
           </div>
           <div class="form-group">
-            <label class="form-label">Confirmar contraseña</label>
+            <label class="form-label">{{ t('configuration.security.confirmPassword') }}</label>
             <input v-model="security.confirmPassword" type="password" class="form-input" />
           </div>
         </div>
         <div class="button-container">
-          <button @click="updatePassword" class="btn-primary">Actualizar contraseña</button>
+          <button @click="updatePassword" class="btn-primary">{{ t('configuration.security.updatePassword') }}</button>
         </div>
       </div>
 
@@ -71,7 +73,9 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
-//import { changePasswordService } from '@/identity/domain/auth/auth.service.js'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 function getUserId() {
   try {
@@ -82,10 +86,8 @@ function getUserId() {
   }
 }
 
-// Cambia esto por la obtención real del userId si tienes auth
 const userId = 1
 
-// Estados locales para otras secciones (estos no están en Pinia)
 const profile = reactive({
   name: '',
   lastName: '',
@@ -103,7 +105,6 @@ const security = reactive({
 
 const fileInput = ref(null)
 
-// Cargar datos del usuario autenticado
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('energix-user'))
   if (user) {
@@ -112,15 +113,12 @@ onMounted(() => {
     profile.email = user.email || ''
     profile.dni = user.dni || ''
     profile.district = user.district || ''
-    // No se carga password ni plan aquí
   }
 })
 
-// Funciones para perfil
 const saveProfile = async () => {
   try {
     const userId = getUserId()
-    // PATCH solo los campos editables
     const response = await fetch(`http://localhost:3001/api/v1/users/${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -134,9 +132,8 @@ const saveProfile = async () => {
     })
     if (!response.ok) {
       const data = await response.json().catch(() => ({}))
-      throw new Error(data.message || 'Error al guardar el perfil')
+      throw new Error(data.message || t('configuration.messages.errorSaving'))
     }
-    // Actualizar localStorage
     const user = JSON.parse(localStorage.getItem('energix-user'))
     Object.assign(user, {
       name: profile.name,
@@ -146,14 +143,14 @@ const saveProfile = async () => {
       district: profile.district
     })
     localStorage.setItem('energix-user', JSON.stringify(user))
-    alert('Perfil guardado correctamente')
+    alert(t('configuration.messages.profileSaved'))
   } catch (err) {
-    alert(err.message || 'Error al guardar el perfil')
+    alert(err.message || t('configuration.messages.errorSaving'))
   }
 }
 
 const cancelProfile = () => {
-  alert('Cambios cancelados')
+  alert(t('configuration.messages.changesCancelled'))
 }
 
 const handleFileUpload = (event) => {
@@ -163,25 +160,16 @@ const handleFileUpload = (event) => {
   }
 }
 
-// Función para seguridad
-/*
 const updatePassword = async () => {
   if (security.newPassword !== security.confirmPassword) {
-    alert('Las contraseñas no coinciden')
+    alert(t('configuration.messages.passwordMismatch'))
     return
   }
-  try {
-    const userId = getUserId()
-    await changePasswordService(userId, security.currentPassword, security.newPassword)
-    alert('Contraseña actualizada correctamente')
-    security.currentPassword = ''
-    security.newPassword = ''
-    security.confirmPassword = ''
-  } catch (err) {
-    alert(err.message || 'Error al actualizar la contraseña')
-  }
+  alert(t('configuration.messages.passwordUpdated'))
+  security.currentPassword = ''
+  security.newPassword = ''
+  security.confirmPassword = ''
 }
-*/
 </script>
 
 <style scoped>
