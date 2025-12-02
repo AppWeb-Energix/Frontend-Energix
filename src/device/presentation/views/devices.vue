@@ -447,3 +447,4 @@ const deviceTypeByPlanLabel = computed(() =>
 :deep(::placeholder) { color: #4a4a4a !important; opacity: 1 !important; }
 :deep(.drop-right) .p-dropdown-panel { left: auto !important; right: 0 !important; transform-origin: top right; }
 </style>
+// end
