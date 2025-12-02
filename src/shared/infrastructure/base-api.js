@@ -22,6 +22,7 @@ async function handleError(res) {
     throw err;
 }
 
+
 export const http = {
     async get(url) {
         const res = await fetch(BASE + url);

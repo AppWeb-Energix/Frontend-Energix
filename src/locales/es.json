@@ -167,8 +167,7 @@
         "features": {
           "basic": "Todo lo del Plan Básico",
           "extendedHistory": "Historial ampliado (últimos 3 meses)",
-          "recommendations": "Recomendaciones personalizadas",
-          "smartAlerts": "Alertas inteligentes (consumo inusual, luces encendidas)",
+          "recommendations": "Recomendaciones personalizadas", "smartAlerts": "Alertas inteligentes (consumo inusual, luces encendidas)",
           "deviceLimit": "Agregar maximo 2 dispositivos"
         }
       },
@@ -276,6 +275,7 @@
   },
   "configuration": {
     "title": "Configuración",
+    "greeting": "Hola, {name}",
     "subtitle": "Plan actual: {plan} | Historial: {history} | Dispositivos: {devices}",
     "profile": {
       "title": "Perfil",
@@ -284,7 +284,7 @@
       "lastName": "Apellido",
       "lastNamePlaceholder": "Benavides",
       "email": "Correo",
-      "emailPlaceholder": "usuario@ejemplo.com",
+      "emailPlaceholder": "usuario&#64;ejemplo.com",
       "dni": "DNI",
       "dniPlaceholder": "99999999",
       "district": "Distrito",
