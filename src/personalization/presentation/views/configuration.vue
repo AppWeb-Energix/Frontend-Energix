@@ -36,7 +36,7 @@
 
           <div class="form-group">
             <label class="form-label">{{ t('configuration.profile.dni') }}</label>
-            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" />
+            <input v-model="profile.dni" type="text" :placeholder="t('configuration.profile.dniPlaceholder')" class="form-input" readonly />
           </div>
 
           <div class="form-group">
@@ -120,6 +120,8 @@ import { reactive, ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { usePersonalizationStore } from '../../application/personalization.js'
+import { ProfileApi } from '../../infrastructure/profile.endpoint.js'
+import { ProfileDomainService } from '../../domain/profile.service.js'
 import { http } from '@/shared/infrastructure/base-api.js'
 import ModalAlert from '../components/ModalAlert.vue'
 
@@ -205,12 +207,15 @@ onMounted(async () => {
 
   // Cargar datos del usuario desde localStorage
   const user = JSON.parse(localStorage.getItem('energix-user') || '{}')
+  console.log('Usuario cargado de localStorage:', user) // Para debug
+
   if (user && user.id) {
-    profile.name = user.firstName || user.name || ''
-    profile.lastName = user.lastName || ''
+    // Soportar diferentes naming: firstName/name, lastName/apellido
+    profile.name = user.firstName || user.name || user.first_name || ''
+    profile.lastName = user.lastName || user.apellido || user.last_name || ''
     profile.email = user.email || ''
-    profile.dni = user.dni || ''
-    profile.district = user.district || ''
+    profile.dni = user.dni || user.document || ''
+    profile.district = user.district || user.ciudad || user.city || ''
   }
 
   // Cargar personalización del usuario desde la API
@@ -241,9 +246,27 @@ const saveProfile = async () => {
   try {
     const userId = getUserId()
 
-    // PATCH solo los campos editables usando http de base-api
-    await http.patch(`/users/${userId}`, {
-      name: profile.name,
+    // Validar datos del perfil
+    const validation = ProfileDomainService.validateProfileData({
+      firstName: profile.name,
+      lastName: profile.lastName,
+      email: profile.email,
+      dni: profile.dni,
+      district: profile.district
+    })
+
+    if (!validation.isValid) {
+      const errors = Object.values(validation.errors).join(', ')
+      modalAlert.value?.show(
+        t('configuration.title'),
+        errors
+      )
+      return
+    }
+
+    // Llamar al API de perfil
+    const updatedProfile = await ProfileApi.updateUserProfile(userId, {
+      firstName: profile.name,
       lastName: profile.lastName,
       email: profile.email,
       dni: profile.dni,
@@ -253,21 +276,24 @@ const saveProfile = async () => {
     // Actualizar localStorage
     const user = JSON.parse(localStorage.getItem('energix-user'))
     Object.assign(user, {
-      name: profile.name,
-      lastName: profile.lastName,
-      email: profile.email,
-      dni: profile.dni,
-      district: profile.district
+      firstName: updatedProfile.firstName,
+      name: updatedProfile.firstName,
+      lastName: updatedProfile.lastName,
+      email: updatedProfile.email,
+      dni: updatedProfile.dni,
+      district: updatedProfile.district
     })
     localStorage.setItem('energix-user', JSON.stringify(user))
+
     modalAlert.value?.show(
       t('configuration.title'),
       t('configuration.messages.profileSaved')
     )
   } catch (err) {
+    const errorMsg = err.response?.data?.message || err.message || t('configuration.messages.profileError')
     modalAlert.value?.show(
       t('configuration.title'),
-      err.message || t('configuration.messages.profileError')
+      errorMsg
     )
   }
 }
@@ -346,11 +372,13 @@ const updatePassword = async () => {
     return
   }
 
-  // Validación 4: Verificar longitud mínima
-  if (security.newPassword.length < 4) {
+  // Validación 4: Validar fortaleza de la contraseña
+  const passwordValidation = ProfileDomainService.validatePasswordStrength(security.newPassword)
+  if (!passwordValidation.isValid) {
+    const errors = passwordValidation.errors.join(', ')
     modalAlert.value?.show(
       t('configuration.title'),
-      t('configuration.messages.passwordTooShort') || 'La contraseña debe tener al menos 4 caracteres'
+      errors
     )
     return
   }
@@ -358,29 +386,12 @@ const updatePassword = async () => {
   try {
     const userId = getUserId()
 
-    // Obtener el usuario actual para verificar la contraseña usando http
-    const user = await http.get(`/users/${userId}`)
-
-    // Verificar que la contraseña actual sea correcta
-    if (user.password !== security.currentPassword) {
-      modalAlert.value?.show(
-        t('configuration.title'),
-        'La contraseña actual es incorrecta'
-      )
-      return
-    }
-
-    // Actualizar la contraseña usando http.patch
-    await http.patch(`/users/${userId}`, {
-      password: security.newPassword
-    })
-
-    // Actualizar también en localStorage si existe
-    const storedUser = JSON.parse(localStorage.getItem('energix-user') || '{}')
-    if (storedUser.id === userId) {
-      storedUser.password = security.newPassword
-      localStorage.setItem('energix-user', JSON.stringify(storedUser))
-    }
+    // Llamar al API de perfil para cambiar contraseña
+    await ProfileApi.changePassword(
+      userId,
+      security.currentPassword,
+      security.newPassword
+    )
 
     // Limpiar los campos después de éxito
     security.currentPassword = ''
@@ -392,9 +403,10 @@ const updatePassword = async () => {
       t('configuration.messages.passwordUpdated') || 'Contraseña actualizada correctamente'
     )
   } catch (err) {
+    const errorMsg = err.response?.data?.message || err.message || t('configuration.messages.passwordError') || 'Error al actualizar la contraseña'
     modalAlert.value?.show(
       t('configuration.title'),
-      err.message || t('configuration.messages.passwordError') || 'Error al actualizar la contraseña'
+      errorMsg
     )
   }
 }
