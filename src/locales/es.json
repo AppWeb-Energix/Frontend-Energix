@@ -2,7 +2,7 @@
   "auth": {
     "title": "Bienvenido a Energix",
     "emailLabel": "Correo Electrónico",
-    "emailPlaceholder": "ejemplo@correo.com",
+    "emailPlaceholder": "ejemplo.correo.com",
     "passwordLabel": "Contraseña",
     "passwordPlaceholder": "Ingrese su contraseña",
     "loginButton": "Iniciar Sesión",
